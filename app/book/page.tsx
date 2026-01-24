@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { listTeamMembers, listServices, searchAvailability, createBooking } from '../actions';
 import styles from './book.module.css';
+import Calendar from './Calendar';
 
 // Type definitions matching our API returns
 interface TeamMember {
@@ -228,12 +229,11 @@ export default function BookingPage() {
       {step === 3 && (
         <div className={styles.form}>
             <label>Select Date</label>
-            <input 
-                className={styles.input}
-                type="date" 
-                onChange={(e) => {
-                    setSelectedDate(e.target.value);
-                    setAvailabilities([]); 
+            <Calendar 
+                value={selectedDate}
+                onChange={(date) => {
+                    setSelectedDate(date);
+                    setAvailabilities([]);
                 }}
             />
             
