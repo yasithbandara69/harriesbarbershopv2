@@ -1,0 +1,90 @@
+.calendar {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 1rem;
+  width: 100%;
+  max-width: 350px;
+  margin: 0 auto;
+  user-select: none;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  color: var(--primary-gold);
+}
+
+.title {
+  font-family: var(--font-oswald);
+  font-size: 1.1rem;
+  letter-spacing: 0.05em;
+}
+
+.navButton {
+  background: transparent;
+  border: 1px solid var(--card-border);
+  color: var(--text-muted);
+  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.navButton:hover {
+  color: var(--primary-gold);
+  border-color: var(--primary-gold);
+}
+
+.weekDays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 0.5rem;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border-radius: 6px;
+  color: var(--foreground);
+  transition: all 0.2s;
+  border: 1px solid transparent;
+}
+
+.day:hover:not(.disabled):not(.selected) {
+  border-color: var(--primary-gold);
+}
+
+.selected {
+  background: var(--primary-gold);
+  color: #000;
+  font-weight: bold;
+}
+
+.disabled {
+  color: #333;
+  cursor: not-allowed;
+}
+
+.outsideMonth {
+  color: #444;
+}
