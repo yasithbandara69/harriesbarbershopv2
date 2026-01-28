@@ -119,7 +119,7 @@ export default function Calendar({ value, onChange }: CalendarProps) {
     <div className={styles.calendar}>
       {renderHeader()}
       <div className={styles.weekDays}>
-         {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
+         {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(d => (
             <div key={d}>{d}</div>
          ))}
       </div>

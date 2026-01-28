@@ -4,81 +4,76 @@ import { useState, useEffect } from 'react';
 import { listTeamMembers, listServices, searchAvailability, createBooking } from '../actions';
 import styles from './book.module.css';
 import Calendar from './Calendar';
+// Icons needed: ArrowLeft, ChevronDown (for accordion), Info (for policy)
+// We will simply use inline SVGs or simple text for now if icons aren't available, but I'll add simple SVGs.
 
-// Type definitions matching our API returns
+// --- TYPES ---
 interface TeamMember {
-  id: string; // This is teamMemberId
-  name: string; // This is displayName
+  id: string; // teamMemberId
+  name: string; // displayName
 }
 
 interface Service {
   id: string;
   name: string;
+  description?: string;
   price: { amount: string; currency: string };
   duration: string; // ms
   version: number;
 }
 
 interface Availability {
-  startAt: string;
+  startAt: string; // ISO
   locationId: string;
 }
 
+// --- SUB-COMPONENTS (Inlined for simplicity in this file) ---
+
 function BarberAvatar({ name }: { name: string }) {
   const [error, setError] = useState(false);
-
-  // Attempt to load the image based on the barber's name
-  // Note: We are assuming .jpg extension as per user uploads.
   const imagePath = `/barbers/${name}.jpg`;
 
   if (error) {
      return (
-        <div style={{
-            width: 100, 
-            height: 100, 
-            background: '#222', 
-            borderRadius: '50%', 
-            marginBottom: '1rem', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
-            color: '#666',
-            fontSize: '1.5rem',
-            border: '2px solid #333'
-        }}>
-            {name.charAt(0)}
+        <div className={styles.barberAvatar} style={{ background: '#333', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <span style={{ fontSize: '1.5rem', color: '#666' }}>{name.charAt(0)}</span>
         </div>
      );
   }
   
   return (
-    <img 
-        src={imagePath} 
-        alt={name} 
-        style={{
-            width: 100, 
-            height: 100, 
-            borderRadius: '50%', 
-            objectFit: 'cover', 
-            marginBottom: '1rem',
-            border: '2px solid var(--primary-gold, #D4AF37)'
-        }}
-        onError={() => setError(true)}
-    />
+    <div className={styles.barberAvatar}>
+        <img 
+            src={imagePath} 
+            alt={name} 
+            onError={() => setError(true)}
+        />
+    </div>
   );
 }
+
+// Icons
+const Icons = {
+    ChevronDown: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>,
+    ChevronUp: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6"/></svg>,
+    ArrowLeft: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>,
+    Info: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>,
+    Instagram: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
+};
 
 export default function BookingPage() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Data State
+  // Data
   const [barbers, setBarbers] = useState<TeamMember[]>([]);
-  const [services, setServices] = useState<Service[]>([]);
+  const [servicesByBarber, setServicesByBarber] = useState<Record<string, Service[]>>({});
+  const [loadingServices, setLoadingServices] = useState<Record<string, boolean>>({});
   const [availabilities, setAvailabilities] = useState<Availability[]>([]);
   
-  // Selection State
+  // Selection
+  const [expandedBarberId, setExpandedBarberId] = useState<string | null>(null);
   const [selectedBarber, setSelectedBarber] = useState<TeamMember | null>(null);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [selectedDate, setSelectedDate] = useState<string>('');
@@ -89,9 +84,10 @@ export default function BookingPage() {
     emailAddress: '',
     phoneNumber: ''
   });
+  const [notes, setNotes] = useState('');
   const [bookingResult, setBookingResult] = useState<any>(null);
 
-  // Load Barbers on Mount
+  // Load Barbers
   useEffect(() => {
     async function loadData() {
         setLoading(true);
@@ -100,7 +96,7 @@ export default function BookingPage() {
             const team = await listTeamMembers();
             setBarbers(team);
         } catch (e) {
-            setError("Failed to load barbers.");
+            setError("Failed to load barbers. Please refresh the page.");
         } finally {
             setLoading(false);
         }
@@ -108,29 +104,37 @@ export default function BookingPage() {
     loadData();
   }, []);
 
-  // Reset services when Barber changes
-  useEffect(() => {
-    setServices([]);
-  }, [selectedBarber]);
+  // Fetch Services when expanding barber
+  const handleExpandBarber = async (barberId: string) => {
+      if (expandedBarberId === barberId) {
+          setExpandedBarberId(null);
+          return;
+      }
+      setExpandedBarberId(barberId);
+      if (!servicesByBarber[barberId]) {
+          setLoadingServices(prev => ({ ...prev, [barberId]: true }));
+          try {
+              const data = await listServices(barberId);
+              // @ts-ignore
+              setServicesByBarber(prev => ({ ...prev, [barberId]: data }));
+          } catch (e) {
+              console.error(e);
+          } finally {
+              setLoadingServices(prev => ({ ...prev, [barberId]: false }));
+          }
+      }
+  };
 
-  // Load Services when Step is 2
-  useEffect(() => {
-    if (step === 2 && services.length === 0) {
-        setLoading(true);
-        // Pass selectedBarber id if available to filter services
-        listServices(selectedBarber?.id).then(data => {
-            // @ts-ignore
-            setServices(data);
-            setLoading(false);
-        });
-    }
-  }, [step, selectedBarber]);
+  const handleServiceSelect = (barber: TeamMember, service: Service) => {
+      setSelectedBarber(barber);
+      setSelectedService(service);
+      setStep(2);
+  };
 
-  // Load Availability when Date is picked (in Step 3)
+  // Fetch Availability
   useEffect(() => {
     if (selectedDate && selectedService && selectedBarber) {
         setLoading(true);
-        // Search for the whole day (Local Time)
         const start = new Date(`${selectedDate}T00:00:00`); 
         const end = new Date(`${selectedDate}T23:59:59`);
         
@@ -141,7 +145,7 @@ export default function BookingPage() {
                 setLoading(false);
             })
             .catch(e => {
-                setError("Could not load availability. Please try another date.");
+                setError("Could not load availability.");
                 setLoading(false);
             });
     }
@@ -159,7 +163,7 @@ export default function BookingPage() {
             customerInfo
         );
         setBookingResult(result);
-        setStep(5);
+        setStep(4);
     } catch (e: any) {
         setError("Booking failed: " + e.message);
     } finally {
@@ -167,142 +171,248 @@ export default function BookingPage() {
     }
   };
 
+  // Format Helpers
+  const formatPrice = (amount: string) => `$${(Number(amount) / 100).toFixed(2)} AUD`;
+  const formatDuration = (ms: string) => `${Math.floor(Number(ms) / 60000)} minutes`;
+
+  const getGroupedTimes = () => {
+      const groups = { Morning: [] as Availability[], Afternoon: [] as Availability[], Evening: [] as Availability[] };
+      availabilities.forEach(slot => {
+          const h = new Date(slot.startAt).getHours();
+          if (h < 12) groups.Morning.push(slot);
+          else if (h < 17) groups.Afternoon.push(slot);
+          else groups.Evening.push(slot);
+      });
+      return groups;
+  };
+
   return (
     <div className={styles.container}>
-      {/* HEADER LOGO */}
-      <div className={styles.logoContainer}>
-          <img src="/logo.png" alt="Harrie's Barbershop" className={styles.logo} />
-      </div>
-
-      {error && <div className={styles.error}>{error}</div>}
+      {/* Logos/Brand can go here if needed, but source uses Navbar. We assume Layout has Navbar or we just center content. */}
       
-      {/* PAGE HEADER */}
-      <h2 className={styles.header}>
-        {step === 1 && "Select a Barber"}
-        {step === 2 && "Select a Service"}
-        {step === 3 && "Select Date & Time"}
-        {step === 4 && "Your Details"}
-        {step === 5 && "Booking Confirmed"}
-      </h2>
-
-      {/* STEP 1: BARBER */}
-      {step === 1 && (
-        <div className={styles.grid}>
-            {loading && <p style={{color: '#888'}}>Loading barbers...</p>}
-            {barbers.map(b => (
-                <div key={b.id} className={styles.card} onClick={() => {
-                    setSelectedBarber(b);
-                    setStep(2);
-                }}>
-                    <BarberAvatar name={b.name} />
-                    <h3>{b.name}</h3>
-                </div>
-            ))}
-        </div>
-      )}
-
-      {/* STEP 2: SERVICE */}
-      {step === 2 && (
-        <>
-            <div className={styles.grid}>
-                {loading && <p style={{color: '#888'}}>Loading services...</p>}
-                {services.map(s => (
-                    <div key={s.id} className={styles.card} onClick={() => {
-                        setSelectedService(s);
-                        setStep(3);
-                    }}>
-                        <h3>{s.name}</h3>
-                        <p>
-                            {s.duration ? Math.floor(Number(s.duration) / 60000) : '?'} mins
-                        </p>
-                        <p style={{color: '#D4AF37', fontWeight: 'bold'}}>
-                            {s.price?.amount ? `$${(Number(s.price.amount) / 100).toFixed(2)}` : 'Price varies'}
-                        </p>
-                    </div>
-                ))}
+      {step === 4 ? (
+        <div className={styles.card}>
+            <div className={styles.cardHeader}>
+                <h3 className={styles.cardTitle} style={{ textAlign: 'center', fontSize: '2rem' }}>Booking Confirmed!</h3>
             </div>
-            <button className={styles.back} onClick={() => setStep(1)}>← Change Barber</button>
-        </>
-      )}
+            <div className={styles.cardContent} style={{ textAlign: 'center' }}>
+                <p style={{ marginBottom: '1rem', color: '#a3a3a3' }}>
+                    You are booked with {selectedBarber?.name} for {selectedService?.name}.
+                </p>
+                <p style={{ fontSize: '1.25rem', color: '#fff', marginBottom: '1rem' }}>
+                    {new Date(selectedDate).toLocaleDateString()} at {new Date(selectedTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                </p>
+                <button className={styles.fullWidthBtn} onClick={() => window.location.reload()}>Book Another</button>
+            </div>
+        </div>
+      ) : (
+        <>
+            {/* Contextual Back Button */}
+            {step > 1 && (
+                <button className={styles.ghostBtn} onClick={() => setStep(step - 1)}>
+                    <span style={{ marginRight: '0.5rem', display: 'flex' }}><Icons.ArrowLeft /></span>
+                    Back
+                </button>
+            )}
 
-      {/* STEP 3: DATE & TIME */}
-      {step === 3 && (
-        <div className={styles.form}>
-            <label>Select Date</label>
-            <Calendar 
-                value={selectedDate}
-                onChange={(date) => {
-                    setSelectedDate(date);
-                    setAvailabilities([]);
-                }}
-            />
-            
-            {loading && <p style={{textAlign: 'center', color: '#888'}}>Searching slots...</p>}
-            
-            {availabilities.length > 0 && (
-                <div className={styles.slots}>
-                    {availabilities.map((a, i) => {
-                        const date = new Date(a.startAt);
-                        const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            {/* Header */}
+            <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
+                <h1 className={styles.headerTitle}>
+                    {step === 1 && "Book Your Appointment"}
+                    {step === 2 && "Select Date & Time"}
+                    {step === 3 && "Confirm Your Booking"}
+                </h1>
+                <p className={styles.headerSubtitle}>
+                    {step === 1 && "Select your preferred barber and service to get started"}
+                    {step === 2 && "Choose your preferred appointment date"}
+                    {step === 3 && "Review your appointment details and enter your contact information"}
+                </p>
+            </div>
+
+            {error && (
+                <div className={styles.alert} style={{ borderColor: '#7f1d1d', color: '#ef4444' }}>
+                    <div className={styles.alertDescription}>{error}</div>
+                </div>
+            )}
+
+            {/* STEP 1: BARBER LIST (Matches BarberCard + ServiceList) */}
+            {step === 1 && (
+                <div className={styles.stack}>
+                    {loading && <p style={{textAlign:'center', color:'#666'}}>Loading...</p>}
+                    {barbers.map(barber => {
+                        const isExpanded = expandedBarberId === barber.id;
+                        const services = servicesByBarber[barber.id] || [];
+                        const isLoadingSvc = loadingServices[barber.id];
+
                         return (
-                            <div key={i} className={styles.slot} onClick={() => {
-                                setSelectedTime(a.startAt);
-                                setStep(4);
-                            }}>
-                                {timeStr}
+                            <div key={barber.id} className={styles.card}>
+                                <div className={styles.cardHeader} onClick={() => handleExpandBarber(barber.id)} style={{ cursor: 'pointer' }}>
+                                    <div className={styles.barberHeaderContent}>
+                                        <BarberAvatar name={barber.name} />
+                                        <div className={styles.barberMeta}>
+                                            <h3 className={styles.cardTitle}>{barber.name}</h3>
+                                            <p className={styles.cardDescription}>Professional Barber</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                {isExpanded && (
+                                    <div className={styles.cardContent}>
+                                        <div style={{ padding: '0.5rem 0', fontWeight: '500', fontSize: '0.875rem' }}>
+                                            Book Now ({isLoadingSvc ? "Loading..." : `${services.length} services`})
+                                        </div>
+                                        {services.map(svc => (
+                                            <div key={svc.id} className={styles.serviceItem}>
+                                                <div className={styles.serviceInfo}>
+                                                    <p className={styles.serviceName}>{svc.name}</p>
+                                                    <p className={styles.serviceMeta}>{svc.description}</p>
+                                                    <p className={styles.serviceMeta}>{formatDuration(svc.duration)}</p>
+                                                </div>
+                                                <div className={styles.servicePriceBlock}>
+                                                    <span className={styles.priceTag}>{formatPrice(svc.price.amount)}</span>
+                                                    <button className={styles.selectBtn} onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleServiceSelect(barber, svc);
+                                                    }}>Select</button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         );
                     })}
                 </div>
             )}
-            {selectedDate && !loading && availabilities.length === 0 && (
-                <p style={{textAlign: 'center', color: '#888', marginTop: '1rem'}}>
-                    No slots available for this date.
-                </p>
+
+            {/* STEP 2: DATE & TIME (Matches DateTimePicker) */}
+            {step === 2 && (
+                <div className={styles.stack}>
+                    {/* Selected Summary Alert */}
+                    <div className={styles.alert}>
+                        <div className={styles.alertDescription}>
+                            <strong>Selected:</strong> {selectedService?.name} with {selectedBarber?.name} ({selectedService && formatPrice(selectedService.price.amount)})
+                        </div>
+                    </div>
+
+                    <div className={styles.card}>
+                        <div className={styles.cardHeader}>
+                            <h3 className={styles.cardTitle}>Select Date</h3>
+                        </div>
+                        <div className={styles.cardContent} style={{ display: 'flex', justifyContent: 'center' }}>
+                            <Calendar value={selectedDate} onChange={(d) => { setSelectedDate(d); setSelectedTime(''); }} />
+                        </div>
+                    </div>
+
+                    {selectedDate && (
+                        <div className={styles.card}>
+                             <div className={styles.cardHeader}>
+                                <h3 className={styles.cardTitle}>Select Time</h3>
+                                <p className={styles.cardDescription}>{new Date(selectedDate).toDateString()}</p>
+                             </div>
+                             <div className={styles.cardContent}>
+                                 {loading ? <p>Loading slots...</p> : (
+                                     <>
+                                        {availabilities.length === 0 && <p style={{textAlign:'center', color: '#666'}}>No slots available.</p>}
+                                        {Object.entries(getGroupedTimes()).map(([label, slots]) => slots.length > 0 && (
+                                            <div key={label} style={{ marginBottom: '1.5rem' }}>
+                                                <h4 className={styles.timeGroupTitle}>{label}</h4>
+                                                <div className={styles.timeGrid}>
+                                                    {slots.map((slot, i) => (
+                                                        <button 
+                                                            key={i} 
+                                                            className={`${styles.timeSlotBtn} ${selectedTime === slot.startAt ? styles.selected : ''}`}
+                                                            onClick={() => { setSelectedTime(slot.startAt); setStep(3); }}
+                                                        >
+                                                            {new Date(slot.startAt).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'})}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ))}
+                                     </>
+                                 )}
+                             </div>
+                        </div>
+                    )}
+                </div>
             )}
 
-            <button className={styles.back} onClick={() => setStep(2)}>← Back to Services</button>
-        </div>
-      )}
+            {/* STEP 3: CHECKOUT (Matches CheckoutPage) */}
+            {step === 3 && (
+                <div className={styles.checkoutGrid}>
+                    <div className={styles.stack}>
+                        {/* Summary Card */}
+                        <div className={styles.card}>
+                            <div className={styles.cardHeader}>
+                                <h3 className={styles.cardTitle}>Appointment Summary</h3>
+                            </div>
+                            <div className={styles.cardContent}>
+                                <div className={styles.summaryRow}>
+                                    <span className={styles.summaryLabel}>Barber:</span>
+                                    <span className={styles.summaryValue}>{selectedBarber?.name}</span>
+                                </div>
+                                <div className={styles.summaryRow}>
+                                    <span className={styles.summaryLabel}>Service:</span>
+                                    <span className={styles.summaryValue}>{selectedService?.name}</span>
+                                </div>
+                                <div className={styles.summaryRow}>
+                                    <span className={styles.summaryLabel}>Date:</span>
+                                    <span className={styles.summaryValue}>{selectedDate}</span>
+                                </div>
+                                <div className={styles.summaryRow}>
+                                    <span className={styles.summaryLabel}>Time:</span>
+                                    <span className={styles.summaryValue}>{selectedTime && new Date(selectedTime).toLocaleTimeString()}</span>
+                                </div>
+                                <div className={styles.summaryTotal}>
+                                    <span className={styles.summaryTotalLabel}>Total:</span>
+                                    <span className={styles.summaryTotalValue}>{selectedService && formatPrice(selectedService.price.amount)}</span>
+                                </div>
+                            </div>
+                        </div>
 
-      {/* STEP 4: CUSTOMER INFO */}
-      {step === 4 && (
-        <div className={styles.form}>
-            <label>First Name</label>
-            <input className={styles.input} placeholder="e.g. John" value={customerInfo.givenName} onChange={e => setCustomerInfo({...customerInfo, givenName: e.target.value})} />
-            
-            <label>Last Name</label>
-            <input className={styles.input} placeholder="e.g. Doe" value={customerInfo.familyName} onChange={e => setCustomerInfo({...customerInfo, familyName: e.target.value})} />
-            
-            <label>Email</label>
-            <input className={styles.input} placeholder="john@example.com" value={customerInfo.emailAddress} onChange={e => setCustomerInfo({...customerInfo, emailAddress: e.target.value})} />
-            
-            <label>Phone</label>
-            <input className={styles.input} placeholder="555-0100" value={customerInfo.phoneNumber} onChange={e => setCustomerInfo({...customerInfo, phoneNumber: e.target.value})} />
-            
-            <button className={styles.primary} onClick={handleBook} disabled={loading}>
-                {loading ? "Confirming..." : "Confirm Appointment"}
-            </button>
-            <button className={styles.back} onClick={() => setStep(3)}>← Back to Time</button>
-        </div>
-      )}
+                        {/* Cancellation Policy */}
+                        <div className={styles.alert}>
+                             <span style={{ marginRight: '0.75rem' }}><Icons.Info /></span>
+                             <div className={styles.alertDescription}>
+                                 <p style={{marginBottom: '0.5rem'}}>Please provide at least 24 hours notice if you need to cancel.</p>
+                                 <p>To cancel, call us at 0425 465 557.</p>
+                             </div>
+                        </div>
+                    </div>
 
-      {/* STEP 5: SUCCESS */}
-      {step === 5 && bookingResult && (
-        <div className={styles.success}>
-            <h3>Booking Confirmed!</h3>
-            <p style={{marginBottom: '1rem', color: '#ccc'}}>
-                You are booked with {selectedBarber?.name} for {selectedService?.name}.
-            </p>
-            <p style={{fontSize: '1.2rem', color: '#fff', marginBottom: '1rem'}}>
-                {new Date(bookingResult.startAt).toLocaleString()}
-            </p>
-            <small style={{color: '#666'}}>Reference: {bookingResult.id}</small>
-            
-            <div style={{marginTop: '2rem'}}>
-                <button className={styles.primary} onClick={() => window.location.reload()}>Book Another</button>
-            </div>
-        </div>
+                    {/* Booking Form */}
+                    <div>
+                        <div style={{ marginBottom: '1.5rem' }}>
+                            <h2 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '0.25rem' }}>Your Details</h2>
+                            <p style={{ fontSize: '0.875rem', color: '#a3a3a3' }}>Enter your contact information to complete the booking</p>
+                        </div>
+
+                        <div className={styles.formItem}>
+                            <label className={styles.formLabel}>First Name</label>
+                            <input className={styles.input} placeholder="John" value={customerInfo.givenName} onChange={e => setCustomerInfo({...customerInfo, givenName: e.target.value})} />
+                        </div>
+                        <div className={styles.formItem}>
+                            <label className={styles.formLabel}>Last Name</label>
+                            <input className={styles.input} placeholder="Smith" value={customerInfo.familyName} onChange={e => setCustomerInfo({...customerInfo, familyName: e.target.value})} />
+                        </div>
+                        <div className={styles.formItem}>
+                            <label className={styles.formLabel}>Phone Number</label>
+                            <input className={styles.input} placeholder="+61..." value={customerInfo.phoneNumber} onChange={e => setCustomerInfo({...customerInfo, phoneNumber: e.target.value})} />
+                            <p style={{ fontSize: '0.75rem', color: '#a3a3a3', marginTop: '0.375rem' }}>You'll receive appointment confirmations via SMS</p>
+                        </div>
+                        <div className={styles.formItem}>
+                            <label className={styles.formLabel}>Notes (Optional)</label>
+                            <textarea className={styles.textarea} placeholder="Any special requests..." value={notes} onChange={e => setNotes(e.target.value)} />
+                        </div>
+
+                        <button className={styles.fullWidthBtn} onClick={handleBook} disabled={loading}>
+                            {loading ? "Confirming..." : "Confirm Booking"}
+                        </button>
+                    </div>
+                </div>
+            )}
+        </>
       )}
     </div>
   );

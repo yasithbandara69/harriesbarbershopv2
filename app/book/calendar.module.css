@@ -1,12 +1,13 @@
 .calendar {
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  border-radius: 12px;
+  background: var(--card-bg, #141414); /* Fallback or use global var if defined, but book module defines vars locally in class usually? No, globals.css defines vars. */
+  border: 1px solid var(--border, #2e2e2e);
+  border-radius: var(--radius, 0.5rem);
   padding: 1rem;
   width: 100%;
   max-width: 350px;
   margin: 0 auto;
   user-select: none;
+  font-family: var(--font-inter), sans-serif;
 }
 
 .header {
@@ -14,22 +15,22 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
-  color: var(--primary-gold);
+  color: var(--foreground, #fff);
+  padding: 0 0.5rem;
 }
 
 .title {
-  font-family: var(--font-oswald);
-  font-size: 1.1rem;
-  letter-spacing: 0.05em;
+  font-weight: 600;
+  font-size: 0.95rem;
 }
 
 .navButton {
   background: transparent;
-  border: 1px solid var(--card-border);
-  color: var(--text-muted);
+  border: 1px solid var(--border, #333);
+  color: var(--muted-foreground, #888);
   border-radius: 6px;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -38,8 +39,14 @@
 }
 
 .navButton:hover {
-  color: var(--primary-gold);
-  border-color: var(--primary-gold);
+  color: var(--foreground, #fff);
+  border-color: var(--foreground, #fff);
+  background: var(--secondary, #222);
+}
+
+.navButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .weekDays {
@@ -48,13 +55,14 @@
   margin-bottom: 0.5rem;
   text-align: center;
   font-size: 0.8rem;
-  color: var(--text-muted);
+  color: var(--muted-foreground, #888);
+  font-weight: 400;
 }
 
 .days {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
+  gap: 2px;
 }
 
 .day {
@@ -62,29 +70,31 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   cursor: pointer;
-  border-radius: 6px;
-  color: var(--foreground);
+  border-radius: var(--radius, 6px);
+  color: var(--foreground, #fff);
   transition: all 0.2s;
-  border: 1px solid transparent;
 }
 
 .day:hover:not(.disabled):not(.selected) {
-  border-color: var(--primary-gold);
+    background-color: var(--secondary, #222);
+    color: var(--foreground);
 }
 
 .selected {
-  background: var(--primary-gold);
-  color: #000;
-  font-weight: bold;
+  background: var(--primary, #D4AF37);
+  color: var(--primary-foreground, #000);
+  font-weight: 600;
 }
 
 .disabled {
-  color: #333;
+  color: var(--muted, #444);
   cursor: not-allowed;
+  opacity: 0.5;
 }
 
 .outsideMonth {
-  color: #444;
+  color: var(--muted, #444);
+  pointer-events: none;
 }
