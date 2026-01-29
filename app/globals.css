@@ -1,19 +1,23 @@
 :root {
   --background: #111111;
   --foreground: #ffffff;
-  --primary-gold: #D4AF37;
-  --primary-gold-hover: #B5952F;
+  --primary-gold: hsl(43, 74%, 49%);
+  --primary-gold-hover: hsl(43, 74%, 39%);
   --card-bg: #1E1E1E;
   --card-border: #333333;
   --text-muted: #888888;
 }
 
+html,
 body {
+  margin: 0;
+  padding: 0;
   color: var(--foreground);
   background: var(--background);
   font-family: var(--font-inter), sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden; /* Prevent horizontal scroll */
 }
 
 h1, h2, h3, h4, h5, h6 {

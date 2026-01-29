@@ -87,7 +87,7 @@
     left: 0;
     width: 0;
     height: 2px;
-    background-color: var(--primary-gold, #D4AF37);
+    background-color: var(--primary-gold);
     transition: width 0.3s ease-in-out;
 }
 
@@ -135,7 +135,7 @@
     align-items: center;
     justify-content: center;
     padding: 0.625rem 1.5rem; /* px-6 py-2.5 */
-    background-color: var(--primary-gold, #D4AF37);
+    background-color: var(--primary-gold);
     color: #0d0d0d; /* text-primary-foreground */
     font-family: var(--font-oswald), sans-serif;
     font-size: 0.875rem; /* text-sm */
@@ -151,7 +151,7 @@
 }
 
 .btnBook:hover {
-    background-color: rgba(212, 175, 55, 0.9); /* bg-primary/90 */
+    background-color: var(--primary-gold-hover); /* bg-primary/90 */
     transform: none;
 }
 

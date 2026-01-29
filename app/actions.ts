@@ -109,7 +109,8 @@ export async function createBooking(
         familyName: string;
         emailAddress: string;
         phoneNumber: string;
-    }
+    },
+    customerNote?: string // Added customerNote
 ) {
     if (!locationId) throw new Error("Location ID not set");
 
@@ -155,6 +156,7 @@ export async function createBooking(
                 customerId,
                 locationId,
                 startAt,
+                customerNote, // Added customerNote
                 appointmentSegments: [
                     {
                         teamMemberId: staffId,

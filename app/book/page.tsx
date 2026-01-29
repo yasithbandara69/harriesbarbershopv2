@@ -153,6 +153,21 @@ export default function BookingPage() {
 
   const handleBook = async () => {
     if (!selectedService || !selectedBarber || !selectedTime) return;
+    
+    // Validation
+    if (!customerInfo.emailAddress) {
+        setError("Please enter your email address.");
+        return;
+    }
+    if (!customerInfo.givenName) {
+        setError("Please enter your first name.");
+        return;
+    }
+    if (!customerInfo.phoneNumber) {
+        setError("Please enter your phone number.");
+        return;
+    }
+
     setLoading(true);
     try {
         const result = await createBooking(
@@ -160,7 +175,8 @@ export default function BookingPage() {
             selectedService.version,
             selectedBarber.id,
             selectedTime,
-            customerInfo
+            customerInfo,
+            notes // Pass notes
         );
         setBookingResult(result);
         setStep(4);
@@ -395,6 +411,16 @@ export default function BookingPage() {
                         <div className={styles.formItem}>
                             <label className={styles.formLabel}>Last Name</label>
                             <input className={styles.input} placeholder="Smith" value={customerInfo.familyName} onChange={e => setCustomerInfo({...customerInfo, familyName: e.target.value})} />
+                        </div>
+                        <div className={styles.formItem}>
+                            <label className={styles.formLabel}>Email Address</label>
+                            <input 
+                                className={styles.input} 
+                                type="email"
+                                placeholder="john.smith@example.com" 
+                                value={customerInfo.emailAddress} 
+                                onChange={e => setCustomerInfo({...customerInfo, emailAddress: e.target.value})} 
+                            />
                         </div>
                         <div className={styles.formItem}>
                             <label className={styles.formLabel}>Phone Number</label>

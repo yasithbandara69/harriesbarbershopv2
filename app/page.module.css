@@ -1,141 +1,173 @@
-.page {
-  --background: #fafafa;
-  --foreground: #fff;
-
-  --text-primary: #000;
-  --text-secondary: #666;
-
-  --button-primary-hover: #383838;
-  --button-secondary-hover: #f2f2f2;
-  --button-secondary-border: #ebebeb;
-
-  display: flex;
-  min-height: 100vh;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-geist-sans);
-  background-color: var(--background);
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-.main {
-  display: flex;
-  min-height: 100vh;
+@keyframes slideUpFade {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Hero Section */
+.hero {
+  position: relative;
   width: 100%;
-  max-width: 800px;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: space-between;
-  background-color: var(--foreground);
-  padding: 120px 60px;
-}
-
-.intro {
+  height: 100vh; /* Restore to full viewport height to "fill the image" */
+  min-height: 700px;
+  background-image: url('/hero background.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
-  gap: 24px;
+  align-items: center;
+  padding-top: 5rem;
+  /* Animate the background container */
+  opacity: 0; /* Start invisible */
+  animation: fadeIn 1.2s ease-out forwards;
 }
 
-.intro h1 {
-  max-width: 320px;
-  font-size: 40px;
+/* Gradient Overlay */
+.hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0.1) 100%);
+  z-index: 1;
+}
+
+.heroContent {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  color: var(--foreground);
+}
+
+@media (min-width: 1024px) {
+  .heroContent {
+    padding-left: 8rem; /* Significantly increased to bring text 'inside' */
+    padding-right: 2rem;
+  }
+}
+
+.heroTitle {
+  font-family: var(--font-oswald), sans-serif;
+  font-size: 3.75rem; /* Reduced from 5rem */
+  font-weight: 700;
+  text-transform: uppercase;
+  line-height: 1.1;
+  margin-bottom: 1.5rem;
+  letter-spacing: 0.05em;
+  color: #fff;
+  opacity: 0;
+  animation: slideUpFade 0.8s ease-out 0.5s forwards; /* Delay 0.5s */
+}
+
+.heroTitle span {
+  color: var(--primary-gold);
+  display: block;
+}
+
+.heroSubtitle {
+  font-family: var(--font-inter), sans-serif;
+  font-size: 1.125rem; /* Reduced from 1.25rem */
+  font-weight: 300;
+  max-width: 500px;
+  margin-bottom: 2.5rem;
+  color: #cccccc;
+  line-height: 1.6;
+  opacity: 0;
+  animation: slideUpFade 0.8s ease-out 0.7s forwards; /* Delay 0.7s */
+}
+
+.ctaButton {
+  display: inline-block;
+  background-color: var(--primary-gold);
+  color: #000000;
+  font-family: var(--font-oswald), sans-serif;
+  font-size: 0.875rem; /* Slightly smaller button text */
+  font-weight: 500;
+  text-transform: uppercase;
+  padding: 0.875rem 2.5rem;
+  border: none;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  letter-spacing: 0.1em;
+  opacity: 0;
+  animation: slideUpFade 0.8s ease-out 0.9s forwards; /* Delay 0.9s */
+}
+
+.ctaButton:hover {
+  background-color: var(--primary-gold-hover);
+  transform: translateY(-2px);
+}
+
+/* Specific styling for the catchy phrase and alignment */
+.catchyPhrase {
+  font-size: 0.875rem; /* Reduced from 1.2rem */
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--primary-gold);
+  margin-bottom: 0.75rem;
   font-weight: 600;
-  line-height: 48px;
-  letter-spacing: -2.4px;
-  text-wrap: balance;
-  color: var(--text-primary);
+  opacity: 0;
+  animation: slideUpFade 0.8s ease-out 0.3s forwards; /* Delay 0.3s */
 }
 
-.intro p {
-  max-width: 440px;
-  font-size: 18px;
-  line-height: 32px;
-  text-wrap: balance;
-  color: var(--text-secondary);
-}
-
-.intro a {
-  font-weight: 500;
-  color: var(--text-primary);
-}
-
-.ctas {
-  display: flex;
-  flex-direction: row;
-  width: 100%;
-  max-width: 440px;
-  gap: 16px;
-  font-size: 14px;
-}
-
-.ctas a {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 40px;
-  padding: 0 16px;
-  border-radius: 128px;
-  border: 1px solid transparent;
-  transition: 0.2s;
-  cursor: pointer;
-  width: fit-content;
-  font-weight: 500;
-}
-
-a.primary {
-  background: var(--text-primary);
-  color: var(--background);
-  gap: 8px;
-}
-
-a.secondary {
-  border-color: var(--button-secondary-border);
-}
-
-/* Enable hover only on non-touch devices */
-@media (hover: hover) and (pointer: fine) {
-  a.primary:hover {
-    background: var(--button-primary-hover);
-    border-color: transparent;
+@media (max-width: 768px) {
+  .hero {
+    background-position: 70% center; /* Shift image to show more relevant part if needed, or keep center */
+    align-items: flex-start; /* Align text to top-centerish or just center vertical */
+    padding-top: 8rem; /* More space for header on mobile if needed */
+    justify-content: center;
   }
 
-  a.secondary:hover {
-    background: var(--button-secondary-hover);
-    border-color: transparent;
+  /* Stronger overlay for readability on mobile where text might overlap complex image parts */
+  .hero::before {
+    background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0.4) 100%);
+  }
+
+  .heroContent {
+    padding: 0 1.5rem;
+    text-align: center; /* Center align on mobile for balance */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .heroTitle {
+    font-size: 2.75rem;
+    line-height: 1.1;
+    margin-bottom: 1rem;
+  }
+  
+  .heroSubtitle {
+    font-size: 1rem;
+    margin-bottom: 2rem;
+    max-width: 100%;
+  }
+
+  .catchyPhrase {
+    font-size: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .ctaButton {
+    width: 100%; /* Full width button on mobile ? or just auto */
+    width: auto;
+    padding: 0.875rem 2rem;
   }
 }
 
-@media (max-width: 600px) {
-  .main {
-    padding: 48px 24px;
-  }
-
-  .intro {
-    gap: 16px;
-  }
-
-  .intro h1 {
-    font-size: 32px;
-    line-height: 40px;
-    letter-spacing: -1.92px;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  .logo {
-    filter: invert();
-  }
-
-  .page {
-    --background: #000;
-    --foreground: #000;
-
-    --text-primary: #ededed;
-    --text-secondary: #999;
-
-    --button-primary-hover: #ccc;
-    --button-secondary-hover: #1a1a1a;
-    --button-secondary-border: #1a1a1a;
-  }
-}

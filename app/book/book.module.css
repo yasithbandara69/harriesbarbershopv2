@@ -6,19 +6,19 @@
     --card-foreground: #fafafa;
     --popover: #141414;
     --popover-foreground: #fafafa;
-    --primary: hsl(43, 74%, 49%); /* Source exact gold */
+    --primary: var(--primary-gold); /* Source exact gold */
     --primary-foreground: #0d0d0d;
     --secondary: #1f1f1f;
     --secondary-foreground: #fafafa;
     --muted: #262626;
     --muted-foreground: #a3a3a3;
-    --accent: hsl(43, 74%, 49%);
+    --accent: var(--primary-gold);
     --accent-foreground: #fafafa;
     --destructive: #7f1d1d;
     --destructive-foreground: #fafafa;
     --border: #2e2e2e;
     --input: #2e2e2e;
-    --ring: hsl(43, 74%, 49%);
+    --ring: var(--primary-gold);
     --radius: 0.5rem;
 }
 
