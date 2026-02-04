@@ -18,6 +18,14 @@ export default async function DashboardPage() {
         .select('*')
         .eq('id', user.id)
         .single();
+
+    // Fetch subscription data
+    const { data: subscription } = await supabase
+        .from('user_subscriptions')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('status', 'ACTIVE') // Only active subscriptions
+        .single();
     
     // Fallback to metadata if profile doesn't exist yet (e.g. legacy user or trigger failure)
     const { first_name, last_name, phone, role, square_customer_id } = profile || user.user_metadata || {};
@@ -57,6 +65,15 @@ export default async function DashboardPage() {
                         <span className={styles.label}>Square Customer ID</span>
                         <span className={styles.value}>{square_customer_id || 'Not linked'}</span>
                     </div>
+
+                    {subscription && (
+                         <div className={styles.detailRow} style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #333' }}>
+                            <span className={styles.label}>Membership Credits</span>
+                            <span className={styles.value} style={{ color: 'var(--primary-gold)', fontWeight: 'bold' }}>
+                                {subscription.credits} remaining
+                            </span>
+                        </div>
+                    )}
                     
                     {role === 'admin' && (
                         <div className={styles.detailRow}>
@@ -82,6 +99,16 @@ export default async function DashboardPage() {
                             Book a haircut now
                         </Link>
                     </div>
+
+                    {subscription && subscription.credits > 0 && (
+                        <div style={{ marginTop: '2rem', padding: '1.5rem', background: 'rgba(212, 175, 55, 0.1)', border: '1px solid var(--primary-gold)', borderRadius: '8px' }}>
+                            <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem', color: 'var(--primary-gold)' }}>Member Booking</h3>
+                            <p style={{ marginBottom: '1rem', fontSize: '0.9rem' }}>You have {subscription.credits} credits available for this month.</p>
+                            <Link href="/dashboard/book" className={styles.logoutBtn} style={{ background: 'var(--primary-gold)', color: '#000', display: 'inline-block', textDecoration: 'none' }}>
+                                Book with Credits
+                            </Link>
+                        </div>
+                    )}
 
                     <h3 className={styles.sectionTitle} style={{marginTop: '2rem'}}>Booking History</h3>
                      <div className={styles.emptyState}>

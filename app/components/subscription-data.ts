@@ -8,10 +8,12 @@ export interface SubscriptionPlan {
   id: string;
   squarePlanId: string; // The ID from Square Dashboard (e.g., "L6... or similar")
   itemVariationId?: string; // The specific Item Variation ID required for "Varies by item" plans
+  serviceId: string; // The 0-dollar service ID for booking bookings
   tier: 'Gold' | 'Platinum';
   price: number;
-  billingCycle: string; // e.g., "every 2 months"
+  billingCycle: string; // e.g., "billed monthly"
   savings: string;
+  credits: number; // Number of appointments included per month
   features: string[];
   recommended?: boolean;
 }
@@ -31,10 +33,12 @@ export const SUBSCRIPTION_DATA: ServiceCategory[] = [
         id: 'gold-cut',
         squarePlanId: 'KBSCWFLBQ4XFOKLB3SI5HNWY',
         itemVariationId: '476R3Q6R3TFKNNPQ2DYQ47KE', // Gold haircut subscription - $100
+        serviceId: '5NSMYVMEE3XCXQ6TB5AYN2RM',
         tier: 'Gold',
-        price: 200,
-        billingCycle: 'billed every 2 months',
+        price: 100,
+        billingCycle: 'per month',
         savings: 'Save 10%',
+        credits: 2,
         features: [
           '2 Haircuts per month',
           'Priority Booking',
@@ -46,10 +50,12 @@ export const SUBSCRIPTION_DATA: ServiceCategory[] = [
         id: 'plat-cut',
         squarePlanId: 'PUHE4GTFY5J2BMLX3JFTP27Y',
         itemVariationId: 'DFLWJUF5ECY32UDE7CBU6DQN', // Platinum Haircut Subscription - $180
+        serviceId: '5NSMYVMEE3XCXQ6TB5AYN2RM',
         tier: 'Platinum',
-        price: 360,
-        billingCycle: 'billed every 2 months',
+        price: 180,
+        billingCycle: 'per month',
         savings: 'Save 20%',
+        credits: 4,
         features: [
           '4 Haircuts per month',
           'VIP Priority Booking',
@@ -69,10 +75,12 @@ export const SUBSCRIPTION_DATA: ServiceCategory[] = [
         id: 'gold-combo',
         squarePlanId: 'VAHMD5HHO2SV63VBVG5CGWOM',
         itemVariationId: 'TZF5UHVBPH47RLICWPFHQA55', // Gold Subscription Haircut + Beard - $130
+        serviceId: 'SMVJNPINNCCMWRLDQTDICE25',
         tier: 'Gold',
-        price: 260,
-        billingCycle: 'billed every 2 months',
+        price: 130,
+        billingCycle: 'per month',
         savings: 'Save 10%',
+        credits: 2,
         features: [
           'Includes 2 Haircut & Beard services',
           'Hot Towel Treatment',
@@ -84,10 +92,12 @@ export const SUBSCRIPTION_DATA: ServiceCategory[] = [
         id: 'plat-combo',
         squarePlanId: 'HATGGV4XB53Q6MXZHGO3ACJ5',
         itemVariationId: '2ALT23O67AI77UJ5LXYYTL4I', // Platinum Haircut + Beard Subscription - $240
+        serviceId: 'SMVJNPINNCCMWRLDQTDICE25',
         tier: 'Platinum',
-        price: 480,
-        billingCycle: 'billed every 2 months',
+        price: 240,
+        billingCycle: 'per month',
         savings: 'Save 15%',
+        credits: 4,
         features: [
           'Includes 4 Haircut & Beard services',
           'Premium Hot Towel Shave',

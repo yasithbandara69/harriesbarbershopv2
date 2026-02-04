@@ -1,7 +1,7 @@
 'use server';
 
-import { squareClient, locationId } from "@/lib/square"; // Assuming alias @ maps to ./
-import { SearchAvailabilityRequest, CreateBookingRequest, Money } from "square";
+import { squareClient, locationId } from "@/lib/square";
+import { SearchAvailabilityRequest, CreateBookingRequest } from "square";
 import { randomUUID } from "crypto";
 
 // Helper to handle BigInt serialization for JSON
@@ -16,7 +16,8 @@ export async function listTeamMembers() {
     const response = await squareClient.bookings.teamMemberProfiles.list({
         locationId: locationId
     });
-    const profiles = response.data || [];
+    const result = response as any;
+    const profiles = result.data || result.teamMemberProfiles || [];
     return profiles.map((p: any) => ({
         id: p.teamMemberId, // Use teamMemberId as the ID we pass around
         name: p.displayName
@@ -33,14 +34,13 @@ export async function listServices(teamMemberId?: string) {
       productTypes: ["APPOINTMENTS_SERVICE"],
     });
     
-    const items = response.items || [];
+    const result = response as any;
+    const items = result.items || [];
     
     const services = items.flatMap((item: any) => item.itemData?.variations?.map((variation: any) => {
         // Filter by Team Member if provided
         if (teamMemberId) {
             const assignedIds = variation.itemVariationData?.teamMemberIds || [];
-            // If the service has specific assignments and the requested staff is NOT in them, skip it.
-            // Note: If assignedIds is empty, it usually means "All Team Members" in Square Dashboard, so we include it.
             if (assignedIds.length > 0 && !assignedIds.includes(teamMemberId)) {
                 return null;
             }
@@ -52,7 +52,7 @@ export async function listServices(teamMemberId?: string) {
             price: variation.itemVariationData?.priceMoney,
             duration: variation.itemVariationData?.serviceDuration,
             description: item.itemData?.description,
-            version: variation.version // Required for booking
+            version: variation.version
         };
     })).filter(Boolean);
 
@@ -61,6 +61,68 @@ export async function listServices(teamMemberId?: string) {
     console.error("Error fetching services:", error);
     return [];
   }
+}
+
+// NEW: Fetch a specific service by ID (even if hidden from general search)
+export async function getServiceById(serviceId: string) {
+    try {
+        // Corrected method based on SDK v44 inspection: client.catalog.object.get({ objectId, ... })
+        const response = await squareClient.catalog.object.get({
+            objectId: serviceId,
+            includeRelatedObjects: true
+        });
+        
+        // Corrected based on debug script: The response object itself contains 'object' and 'relatedObjects'
+        // There is no .result wrapper on this specific return type from the SDK for this method.
+        const result = response as any;
+        const item = result.object;
+        
+        if (!item) return null;
+
+        if (item.type === "ITEM") {
+             // If we got the parent Item, we need to pick a variation.
+             // Usually for a subscription service there is only one variation.
+             const variation = item.itemData?.variations?.[0];
+             if (!variation) return null;
+             
+             return serializeBigInt({
+                id: variation.id,
+                name: item.itemData?.name + (variation.itemVariationData?.name ? ` - ${variation.itemVariationData.name}` : ''),
+                price: variation.itemVariationData?.priceMoney,
+                duration: variation.itemVariationData?.serviceDuration,
+                version: variation.version
+             });
+        }
+
+        // Check if we got the variation directly
+        if (item.type === "ITEM_VARIATION") {
+             // We need to fetch the parent Item to get the main name
+             const parentId = item.itemVariationData?.itemId;
+             let name = item.itemVariationData?.name || "Service";
+             
+             if (parentId) {
+                 try {
+                    const parentRes = await squareClient.catalog.object.get({ objectId: parentId });
+                    const pResult = parentRes as any;
+                    const parentName = pResult.object?.itemData?.name;
+                    if (parentName) name = `${parentName} - ${name}`;
+                 } catch(e) {}
+             }
+
+             return serializeBigInt({
+                id: item.id,
+                name: name,
+                price: item.itemVariationData?.priceMoney,
+                duration: item.itemVariationData?.serviceDuration,
+                version: item.version
+             });
+        }
+        
+        return null;
+    } catch (error: any) {
+        console.error("Error fetching specific service:", error);
+        throw error;
+    }
 }
 
 export async function searchAvailability(startAt: string, endAt: string, serviceId: string, staffId?: string) {
@@ -88,20 +150,22 @@ export async function searchAvailability(startAt: string, endAt: string, service
 
     try {
         const response = await squareClient.bookings.searchAvailability(query);
-        return serializeBigInt(response.availabilities || []);
+        // Corrected based on debug: response has availabilities directly
+        const result = response as any; 
+        return serializeBigInt(result.availabilities || []);
     } catch (error: any) {
         console.error("Error searching availability:", JSON.stringify(error, null, 2));
-        // If the error is because the staff doesn't perform the service, just return empty availability
         if (error.result?.errors?.some((e: any) => e.detail && e.detail.includes("Search did not find a team member"))) {
              return [];
         }
-        throw error; // Rethrow other errors to be handled by the UI
+        throw error;
     }
 }
 
+// RESTORED: Create Booking function
 export async function createBooking(
     serviceId: string,
-    serviceVersion: number, // Added version
+    serviceVersion: number,
     staffId: string,
     startAt: string,
     customerDetails: {
@@ -110,7 +174,7 @@ export async function createBooking(
         emailAddress: string;
         phoneNumber: string;
     },
-    customerNote?: string // Added customerNote
+    customerNote?: string
 ) {
     if (!locationId) throw new Error("Location ID not set");
 
@@ -129,8 +193,9 @@ export async function createBooking(
         let customerId: string | undefined;
         try {
             const searchRes = await squareClient.customers.search(searchCustomerReq);
-            if (searchRes.customers && searchRes.customers.length > 0) {
-                customerId = searchRes.customers[0].id;
+            const sResult = searchRes as any;
+            if (sResult.customers && sResult.customers.length > 0) {
+                customerId = sResult.customers[0].id;
             }
         } catch (e) {
             console.log("Customer search failed or empty, creating new.");
@@ -144,8 +209,10 @@ export async function createBooking(
                 phoneNumber: customerDetails.phoneNumber,
                 idempotencyKey: randomUUID() 
             };
+            // Reverted to .create() based on Step 127 working code
             const createRes = await squareClient.customers.create(createCustomerReq);
-            customerId = createRes.customer?.id;
+            const cResult = createRes as any;
+            customerId = cResult.customer?.id;
         }
 
         if (!customerId) throw new Error("Failed to resolve customer user.");
@@ -156,20 +223,22 @@ export async function createBooking(
                 customerId,
                 locationId,
                 startAt,
-                customerNote, // Added customerNote
+                customerNote,
                 appointmentSegments: [
                     {
                         teamMemberId: staffId,
                         serviceVariationId: serviceId,
-                        serviceVariationVersion: BigInt(serviceVersion), // Pass version
+                        serviceVariationVersion: BigInt(serviceVersion),
                     }
                 ]
             },
             idempotencyKey: randomUUID()
         };
 
+        // Reverted to .create() based on working code
         const response = await squareClient.bookings.create(bookingReq);
-        return serializeBigInt(response.booking);
+        const bResult = response as any;
+        return serializeBigInt(bResult.booking);
 
     } catch (error: any) {
         console.error("Error creating booking:", error);

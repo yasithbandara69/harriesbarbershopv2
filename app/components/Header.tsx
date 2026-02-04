@@ -7,12 +7,33 @@ import { usePathname } from 'next/navigation';
 import Modal from './Modal';
 import LoginForm from './auth/LoginForm';
 import SignupForm from './auth/SignupForm';
+import { createClient } from '@/utils/supabase/client';
 
 export default function Header() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [showLoginModal, setShowLoginModal] = useState(false);
     const [showSignupModal, setShowSignupModal] = useState(false);
+    const [user, setUser] = useState<any>(null);
     const pathname = usePathname();
+
+    // Check auth state
+    useEffect(() => {
+        const supabase = createClient();
+        
+        // Initial check
+        supabase.auth.getUser().then(({ data: { user } }) => {
+            setUser(user);
+        });
+
+        // Listen for changes
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            setUser(session?.user ?? null);
+        });
+
+        return () => {
+            subscription.unsubscribe();
+        };
+    }, []);
 
     // Close modals when route changes (e.g. successful login redirect)
     useEffect(() => {
@@ -71,20 +92,32 @@ export default function Header() {
 
                 {/* Controls (Login, Signup, Book) */}
                 <div className={styles.controls}>
-                    <button 
-                        className={styles.loginBtn}
-                        onClick={openLogin}
-                        style={{ position: 'relative', zIndex: 60 }}
-                    >
-                        LOGIN
-                    </button>
-                    <button 
-                        className={styles.btnBook} // Keep style similar
-                        onClick={openSignup}
-                        style={{ marginRight: '0.5rem', position: 'relative', zIndex: 60 }} // Add a bit of spacing if needed
-                    >
-                        SIGN UP
-                    </button>
+                    {user ? (
+                        <Link 
+                            href="/dashboard" 
+                            className={styles.btnBook} // Reuse book button style or create new one? reusing is usually safe for consistency
+                            style={{ marginRight: '0.5rem', position: 'relative', zIndex: 60, backgroundColor: 'transparent', border: '1px solid var(--primary-gold)', color: 'var(--primary-gold)' }}
+                        >
+                            DASHBOARD
+                        </Link>
+                    ) : (
+                        <>
+                            <button 
+                                className={styles.loginBtn}
+                                onClick={openLogin}
+                                style={{ position: 'relative', zIndex: 60 }}
+                            >
+                                LOGIN
+                            </button>
+                            <button 
+                                className={styles.btnBook} // Keep style similar
+                                onClick={openSignup}
+                                style={{ marginRight: '0.5rem', position: 'relative', zIndex: 60 }} 
+                            >
+                                SIGN UP
+                            </button>
+                        </>
+                    )}
                     <Link href="/book" className={styles.btnBook}>
                         BOOK NOW
                     </Link>
@@ -120,20 +153,35 @@ export default function Header() {
                             {item.name}
                         </Link>
                     ))}
-                    <button 
-                        className={styles.mobileNavLink} 
-                        onClick={openLogin}
-                        style={{ textAlign: 'left', background: 'none', border: 'none', width: '100%', cursor: 'pointer' }}
-                    >
-                        LOGIN
-                    </button>
-                    <button 
-                        className={styles.btnBook} 
-                        onClick={openSignup}
-                        style={{ textAlign: 'center' }}
-                    >
-                        SIGN UP
-                    </button>
+                    
+                    {user ? (
+                         <Link 
+                            href="/dashboard" 
+                            className={styles.mobileNavLink}
+                            onClick={() => setMobileMenuOpen(false)}
+                            style={{ textAlign: 'left', width: '100%', color: 'var(--primary-gold)' }}
+                        >
+                            DASHBOARD
+                        </Link>
+                    ) : (
+                        <>
+                            <button 
+                                className={styles.mobileNavLink} 
+                                onClick={openLogin}
+                                style={{ textAlign: 'left', background: 'none', border: 'none', width: '100%', cursor: 'pointer' }}
+                            >
+                                LOGIN
+                            </button>
+                            <button 
+                                className={styles.btnBook} 
+                                onClick={openSignup}
+                                style={{ textAlign: 'center' }}
+                            >
+                                SIGN UP
+                            </button>
+                        </>
+                    )}
+
                     <Link href="/book" className={styles.btnBook} onClick={() => setMobileMenuOpen(false)}>
                         BOOK NOW
                     </Link>
