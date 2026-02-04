@@ -1,0 +1,368 @@
+
+.section {
+  padding: 2rem 0; /* Reduced from 4rem for single frame view */
+  background-color: var(--color-dark-800);
+  position: relative;
+  overflow: hidden;
+}
+
+.decorativeBg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.05;
+  pointer-events: none;
+}
+
+.circleOne {
+  position: absolute;
+  top: 2rem;
+  left: 1rem;
+  width: 10rem;
+  height: 10rem;
+  border: 1px solid white;
+  border-radius: 9999px;
+}
+
+.circleTwo {
+  position: absolute;
+  bottom: 2rem;
+  right: 1rem;
+  width: 14rem;
+  height: 14rem;
+  border: 1px solid var(--color-gold);
+  border-radius: 9999px;
+}
+
+.container {
+  width: 100%;
+  margin-right: auto;
+  margin-left: auto;
+  padding-right: 1.5rem; /* Match AboutUs px-6 (1.5rem) */
+  padding-left: 1.5rem;
+  position: relative;
+  z-index: 10;
+  max-width: 1200px; /* Match AboutUs max-width exactly */
+}
+
+/* Header */
+.header {
+  text-align: center;
+  max-width: 48rem;
+  margin: 0 auto 1.5rem; /* Drasticaly reduced margin */
+}
+
+.subheading {
+  color: var(--color-gold);
+  font-family: var(--font-oswald);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  font-size: 1rem; /* Increased from 0.75rem */
+  margin-bottom: 0.25rem;
+  display: block;
+}
+
+.heading {
+  font-family: var(--font-oswald);
+  font-size: 1.75rem; /* Smaller heading */
+  font-weight: 700;
+  text-transform: uppercase;
+  color: white;
+  margin-bottom: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .heading {
+    font-size: 2.5rem;
+  }
+}
+
+.description {
+  font-family: var(--font-inter);
+  color: #9ca3af;
+  font-size: 0.875rem;
+}
+
+/* Tiers Grid */
+.tiersGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  width: 100%;
+  margin: 0 auto;
+}
+
+@media (min-width: 1024px) {
+  .tiersGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Tier Card (Container) */
+.tierCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border-radius: 0.75rem;
+  border-width: 1px; /* Thinner border */
+  border-style: solid;
+  transition: all 300ms;
+}
+
+.platinumContainer {
+  background-image: linear-gradient(to bottom, var(--color-dark-900), black);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.goldContainer {
+  background-color: var(--color-dark-900);
+  border-color: rgba(212, 175, 55, 0.4);
+}
+
+/* Tier Header */
+.tierHeader {
+  padding: 1rem; /* Compact padding */
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: row; /* Horizontal layout for header to save space? No, keep col but smaller */
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.iconWrapper {
+  margin-bottom: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 9999px;
+}
+
+.iconBgPlatinum {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.iconBgGold {
+  background-color: rgba(212, 175, 55, 0.1);
+  color: var(--color-gold);
+}
+
+.tierTitle {
+  font-family: var(--font-oswald);
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  margin-bottom: 0.15rem;
+}
+
+@media (min-width: 768px) {
+  .tierTitle {
+    font-size: 1.75rem;
+  }
+}
+
+.tierTitleGold { color: var(--color-gold); }
+.tierTitlePlatinum { color: white; }
+
+.tierSubtitle {
+  color: #9ca3af;
+  font-family: var(--font-inter);
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* Plans Grid (Inner) */
+.plansGrid {
+  padding: 0.75rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+@media (min-width: 768px) {
+  .plansGrid {
+    padding: 1rem;
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Service Sub Card */
+.subCard {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  position: relative;
+  transition: all 300ms;
+  border-width: 1px;
+  border-style: solid;
+}
+
+@media (min-width: 1024px) {
+  .subCard {
+    padding: 1.25rem;
+  }
+}
+
+.subCard:hover {
+  transform: translateY(-0.15rem);
+}
+
+.subCardGold {
+  background-color: rgba(212, 175, 55, 0.05);
+  border-color: rgba(212, 175, 55, 0.1);
+}
+.subCardGold:hover {
+  background-color: rgba(212, 175, 55, 0.1);
+}
+
+.subCardPlatinum {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+.subCardPlatinum:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Service Card Components */
+.subCardHeader {
+  text-align: center;
+  margin-bottom: 0.75rem;
+}
+
+.serviceName {
+  font-family: var(--font-oswald);
+  font-size: 1.125rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  color: white;
+  margin-bottom: 0.25rem;
+  min-height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.billingBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.1rem 0.5rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+.billingText {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  color: #9ca3af;
+}
+
+.priceWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  margin-bottom: 0.75rem;
+}
+
+.currencySymbol {
+  font-size: 1rem;
+  color: #6b7280;
+  font-family: var(--font-inter);
+}
+
+.priceValue {
+  font-size: 2rem;
+  font-weight: 700;
+  font-family: var(--font-oswald);
+}
+@media (min-width: 1024px) {
+  .priceValue { font-size: 2.5rem; }
+}
+
+.textGold { color: var(--color-gold); }
+.textWhite { color: white; }
+
+.savingsWrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.savingsBadge {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.2rem 0.4rem;
+  border-radius: 0.2rem;
+}
+
+.badgeGold { background-color: var(--color-gold); color: black; }
+.badgePlatinum { background-color: white; color: black; }
+
+.divider {
+  height: 1px;
+  width: 100%;
+  margin-bottom: 1.5rem; /* Reduced from 2rem */
+}
+
+.dividerGold { background-color: rgba(212, 175, 55, 0.1); }
+.dividerPlatinum { background-color: rgba(255, 255, 255, 0.1); }
+
+.featuresList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem; /* Reduced from 1rem */
+  margin-bottom: 1.5rem; /* Reduced from 2rem */
+  flex: 1;
+  list-style: none;
+  padding: 0;
+}
+
+.featureItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.checkIcon {
+  margin-top: 0.125rem;
+  flex-shrink: 0;
+}
+
+.featureText {
+  font-family: var(--font-inter);
+  color: #d1d5db;
+  font-size: 0.8rem; /* Reduced from 0.875rem */
+  line-height: 1.5;
+}
+
+.selectBtn {
+  margin-top: auto;
+  font-size: 0.8rem; /* Smaller button text */
+  padding: 0.5rem 1rem; /* Smaller button padding */
+}
+
+.btnGold {
+    border-color: rgba(212, 175, 55, 0.5);
+}
+
+.btnPlatinum {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+.btnPlatinum:hover {
+  background-color: white;
+  color: black;
+}

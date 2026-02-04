@@ -1,0 +1,510 @@
+{
+  "objects": [
+    {
+      "type": "SUBSCRIPTION_PLAN",
+      "created_at": "2025-11-07T07:36:20.699Z",
+      "subscriptionPlanData": {
+        "name": "Fresh Fade every week",
+        "subscriptionPlanVariations": [
+          {
+            "type": "SUBSCRIPTION_PLAN_VARIATION",
+            "created_at": "2025-11-07T07:36:20.699Z",
+            "subscriptionPlanVariationData": {
+              "name": "Fresh Fade every week",
+              "phases": [
+                {
+                  "uid": "UGCHZSGFY2BHORMWNCZBZ4R5",
+                  "cadence": "MONTHLY",
+                  "ordinal": "0",
+                  "pricing": {
+                    "type": "RELATIVE",
+                    "discountIds": [
+                      "FWINR5W7XR6HUKDCREB3DTAR"
+                    ]
+                  }
+                }
+              ],
+              "subscriptionPlanId": "2C75RME2K2STPQKESG5YKD2O"
+            },
+            "id": "XRN5DLF3KHIXEOSVFDMIKEAP",
+            "updatedAt": "2025-11-07T07:38:58.603Z",
+            "version": "1762501138603",
+            "isDeleted": false,
+            "presentAtAllLocations": false
+          }
+        ],
+        "eligibleItemIds": [
+          "H73VUPOESDIAVU54CBHWUR4U"
+        ],
+        "allItems": false
+      },
+      "id": "2C75RME2K2STPQKESG5YKD2O",
+      "updatedAt": "2025-11-07T07:38:58.603Z",
+      "version": "1762501138603",
+      "isDeleted": false,
+      "presentAtAllLocations": false
+    },
+    {
+      "type": "SUBSCRIPTION_PLAN",
+      "created_at": "2025-11-07T07:41:19.218Z",
+      "subscriptionPlanData": {
+        "name": "Fresh Fade every week",
+        "subscriptionPlanVariations": [
+          {
+            "type": "SUBSCRIPTION_PLAN_VARIATION",
+            "created_at": "2025-11-07T07:41:19.218Z",
+            "subscriptionPlanVariationData": {
+              "name": "Fresh Fade every week",
+              "phases": [
+                {
+                  "uid": "AHLCOKMAXNBA7F4WAXA4O7EQ",
+                  "cadence": "MONTHLY",
+                  "ordinal": "0",
+                  "pricing": {
+                    "type": "STATIC",
+                    "price": {
+                      "amount": 18000,
+                      "currency": "AUD"
+                    },
+                    "priceMoney": {
+                      "amount": "18000",
+                      "currency": "AUD"
+                    }
+                  }
+                }
+              ],
+              "subscriptionPlanId": "U6YZS4N5NK4LRPCMGMHGYWEF"
+            },
+            "id": "D456R4SUNJKMO7EJ7LWPOZE6",
+            "updatedAt": "2025-11-07T07:48:56.093Z",
+            "version": "1762501736093",
+            "isDeleted": false,
+            "presentAtAllLocations": false
+          }
+        ]
+      },
+      "id": "U6YZS4N5NK4LRPCMGMHGYWEF",
+      "updatedAt": "2025-11-07T07:48:56.093Z",
+      "version": "1762501736093",
+      "isDeleted": false,
+      "presentAtAllLocations": false
+    },
+    {
+      "type": "SUBSCRIPTION_PLAN",
+      "created_at": "2025-11-07T07:51:01.81Z",
+      "subscriptionPlanData": {
+        "name": "Fresh Fade every week",
+        "subscriptionPlanVariations": [
+          {
+            "type": "SUBSCRIPTION_PLAN_VARIATION",
+            "created_at": "2025-11-07T07:51:01.81Z",
+            "subscriptionPlanVariationData": {
+              "name": "Fresh Fade every week",
+              "phases": [
+                {
+                  "uid": "H3PETHK77KYAQYXM4YGHJLPW",
+                  "cadence": "MONTHLY",
+                  "ordinal": "0",
+                  "pricing": {
+                    "type": "RELATIVE",
+                    "discountIds": [
+                      "MEHPC2MIJQ3EOAIJYIJ5YUDP"
+                    ]
+                  }
+                }
+              ],
+              "subscriptionPlanId": "XNLGC6BHJNCVHYZIK6Q2IYMG"
+            },
+            "id": "XDHEQQ3FMSVG6CIIYEINNKGR",
+            "updatedAt": "2025-11-07T08:11:32.953Z",
+            "version": "1762503092953",
+            "isDeleted": false,
+            "presentAtAllLocations": false
+          }
+        ],
+        "eligibleItemIds": [
+          "H73VUPOESDIAVU54CBHWUR4U"
+        ],
+        "allItems": false
+      },
+      "id": "XNLGC6BHJNCVHYZIK6Q2IYMG",
+      "updatedAt": "2025-11-07T08:11:32.953Z",
+      "version": "1762503092953",
+      "isDeleted": false,
+      "presentAtAllLocations": false
+    },
+    {
+      "type": "SUBSCRIPTION_PLAN",
+      "created_at": "2025-11-07T07:59:22.09Z",
+      "subscriptionPlanData": {
+        "name": "Fresh Fade every week",
+        "subscriptionPlanVariations": [
+          {
+            "type": "SUBSCRIPTION_PLAN_VARIATION",
+            "created_at": "2025-11-07T07:59:22.09Z",
+            "subscriptionPlanVariationData": {
+              "name": "Fresh Fade every week",
+              "phases": [
+                {
+                  "uid": "4CF3EATXFLFDTFBZFJQ26NSG",
+                  "cadence": "MONTHLY",
+                  "ordinal": "0",
+                  "pricing": {
+                    "type": "STATIC",
+                    "price": {
+                      "amount": 18000,
+                      "currency": "AUD"
+                    },
+                    "priceMoney": {
+                      "amount": "18000",
+                      "currency": "AUD"
+                    }
+                  }
+                }
+              ],
+              "subscriptionPlanId": "KMLZ5MP6OBEQITBJTFHX57NF"
+            },
+            "id": "FUPVIO5WGTTYDNUKOQ4M6XFL",
+            "updatedAt": "2025-11-07T08:02:09.002Z",
+            "version": "1762502529002",
+            "isDeleted": false,
+            "presentAtAllLocations": false
+          }
+        ]
+      },
+      "id": "KMLZ5MP6OBEQITBJTFHX57NF",
+      "updatedAt": "2025-11-07T08:02:09.002Z",
+      "version": "1762502529002",
+      "isDeleted": false,
+      "presentAtAllLocations": false
+    },
+    {
+      "type": "SUBSCRIPTION_PLAN",
+      "created_at": "2025-11-07T08:07:46.622Z",
+      "subscriptionPlanData": {
+        "name": "Fresh Fade every week",
+        "subscriptionPlanVariations": [
+          {
+            "type": "SUBSCRIPTION_PLAN_VARIATION",
+            "created_at": "2025-11-07T08:07:46.622Z",
+            "subscriptionPlanVariationData": {
+              "name": "Fresh Fade every week",
+              "phases": [
+                {
+                  "uid": "GV6YBALWCLXILHKAEGCRNTK6",
+                  "cadence": "MONTHLY",
+                  "ordinal": "0",
+                  "pricing": {
+                    "type": "STATIC",
+                    "price": {
+                      "amount": 18000,
+                      "currency": "AUD"
+                    },
+                    "priceMoney": {
+                      "amount": "18000",
+                      "currency": "AUD"
+                    }
+                  }
+                }
+              ],
+              "subscriptionPlanId": "2QA2KLT74X75COYGGRG3DHVK"
+            },
+            "id": "U2SKU73A2MELLWLVABZLN6FZ",
+            "updatedAt": "2025-11-11T00:18:18.866Z",
+            "version": "1762820298866",
+            "isDeleted": false,
+            "presentAtAllLocations": false
+          }
+        ]
+      },
+      "id": "2QA2KLT74X75COYGGRG3DHVK",
+      "updatedAt": "2025-11-11T00:18:18.866Z",
+      "version": "1762820298866",
+      "isDeleted": false,
+      "presentAtAllLocations": false
+    },
+    {
+      "type": "SUBSCRIPTION_PLAN",
+      "created_at": "2025-11-07T08:09:55.786Z",
+      "subscriptionPlanData": {
+        "name": "Weekly Refresh",
+        "subscriptionPlanVariations": [
+          {
+            "type": "SUBSCRIPTION_PLAN_VARIATION",
+            "created_at": "2025-11-07T08:09:55.786Z",
+            "subscriptionPlanVariationData": {
+              "name": "Weekly Refresh",
+              "phases": [
+                {
+                  "uid": "EEOSRRLFYGN7DYOAOHWDFKPP",
+                  "cadence": "MONTHLY",
+                  "ordinal": "0",
+                  "pricing": {
+                    "type": "STATIC",
+                    "price": {
+                      "amount": 24000,
+                      "currency": "AUD"
+                    },
+                    "priceMoney": {
+                      "amount": "24000",
+                      "currency": "AUD"
+                    }
+                  }
+                }
+              ],
+              "subscriptionPlanId": "TFWUXTMTBERPIPYD55EWKVTX"
+            },
+            "id": "S7UQMUAFVKEQC6M7SIMI2IQW",
+            "updatedAt": "2025-11-11T00:18:21.386Z",
+            "version": "1762820301386",
+            "isDeleted": false,
+            "presentAtAllLocations": false
+          }
+        ]
+      },
+      "id": "TFWUXTMTBERPIPYD55EWKVTX",
+      "updatedAt": "2025-11-11T00:18:21.386Z",
+      "version": "1762820301386",
+      "isDeleted": false,
+      "presentAtAllLocations": false
+    },
+    {
+      "type": "SUBSCRIPTION_PLAN",
+      "created_at": "2025-11-07T08:10:33.383Z",
+      "subscriptionPlanData": {
+        "name": "Fortnite Haircut +beard",
+        "subscriptionPlanVariations": [
+          {
+            "type": "SUBSCRIPTION_PLAN_VARIATION",
+            "created_at": "2025-11-07T08:10:33.383Z",
+            "subscriptionPlanVariationData": {
+              "name": "Fortnite Haircut +beard",
+              "phases": [
+                {
+                  "uid": "PQYAY2OKPSVIEDATIIBG3YFW",
+                  "cadence": "MONTHLY",
+                  "ordinal": "0",
+                  "pricing": {
+                    "type": "STATIC",
+                    "price": {
+                      "amount": 13000,
+                      "currency": "AUD"
+                    },
+                    "priceMoney": {
+                      "amount": "13000",
+                      "currency": "AUD"
+                    }
+                  }
+                }
+              ],
+              "subscriptionPlanId": "T76QZWUXCGKXP4GJJ2IK4ERQ"
+            },
+            "id": "2ESXED6PYQNJNAGLKSH5S6NB",
+            "updatedAt": "2025-11-11T00:18:16.283Z",
+            "version": "1762820296283",
+            "isDeleted": false,
+            "presentAtAllLocations": false
+          }
+        ]
+      },
+      "id": "T76QZWUXCGKXP4GJJ2IK4ERQ",
+      "updatedAt": "2025-11-11T00:18:16.283Z",
+      "version": "1762820296283",
+      "isDeleted": false,
+      "presentAtAllLocations": false
+    },
+    {
+      "type": "SUBSCRIPTION_PLAN",
+      "created_at": "2026-01-31T17:02:20.446Z",
+      "subscriptionPlanData": {
+        "name": "Gold Membership Haircuts",
+        "subscriptionPlanVariations": [
+          {
+            "type": "SUBSCRIPTION_PLAN_VARIATION",
+            "created_at": "2026-01-31T17:02:20.446Z",
+            "subscriptionPlanVariationData": {
+              "name": "Gold Membership Haircuts",
+              "phases": [
+                {
+                  "uid": "JGCCOXAXYWJK5FQW7KCHRICH",
+                  "cadence": "MONTHLY",
+                  "ordinal": "0",
+                  "pricing": {
+                    "type": "RELATIVE",
+                    "discountIds": [
+                      "5QB4KGS7TGJHTEGQOKMLQD2X"
+                    ]
+                  }
+                }
+              ],
+              "configuration": {
+                "buyer_allow_indefinite_pausing": true,
+                "buyer_max_cycles_to_skip": 0
+              },
+              "subscriptionPlanId": "LBZTK3K4MEBVIIWAVSURO2SK"
+            },
+            "id": "KBSCWFLBQ4XFOKLB3SI5HNWY",
+            "updatedAt": "2026-01-31T17:02:20.415Z",
+            "version": "1769878940415",
+            "isDeleted": false,
+            "presentAtAllLocations": true
+          }
+        ],
+        "eligibleItemIds": [
+          "H73VUPOESDIAVU54CBHWUR4U"
+        ],
+        "allItems": false
+      },
+      "id": "LBZTK3K4MEBVIIWAVSURO2SK",
+      "updatedAt": "2026-01-31T17:02:20.415Z",
+      "version": "1769878940415",
+      "isDeleted": false,
+      "presentAtAllLocations": true
+    },
+    {
+      "type": "SUBSCRIPTION_PLAN",
+      "created_at": "2026-01-31T17:04:05.158Z",
+      "subscriptionPlanData": {
+        "name": "Gold Membership Haircut + beard",
+        "subscriptionPlanVariations": [
+          {
+            "type": "SUBSCRIPTION_PLAN_VARIATION",
+            "created_at": "2026-01-31T17:04:05.158Z",
+            "subscriptionPlanVariationData": {
+              "name": "Gold Membership Haircut + beard",
+              "phases": [
+                {
+                  "uid": "US4GYJMBVW3ZRLZB3EYZWYBR",
+                  "cadence": "MONTHLY",
+                  "ordinal": "0",
+                  "pricing": {
+                    "type": "RELATIVE",
+                    "discountIds": [
+                      "637UX37W2UBCG4WJDYRN3EVK"
+                    ]
+                  }
+                }
+              ],
+              "configuration": {
+                "buyer_allow_indefinite_pausing": true,
+                "buyer_max_cycles_to_skip": 0
+              },
+              "subscriptionPlanId": "BJKQSNDFNBZHBDXMSF43F7I3"
+            },
+            "id": "VAHMD5HHO2SV63VBVG5CGWOM",
+            "updatedAt": "2026-01-31T17:04:05.119Z",
+            "version": "1769879045119",
+            "isDeleted": false,
+            "presentAtAllLocations": true
+          }
+        ],
+        "eligibleItemIds": [
+          "XF4QX5LZ3ORJIQCSQZISAIXY"
+        ],
+        "allItems": false
+      },
+      "id": "BJKQSNDFNBZHBDXMSF43F7I3",
+      "updatedAt": "2026-01-31T17:04:05.119Z",
+      "version": "1769879045119",
+      "isDeleted": false,
+      "presentAtAllLocations": true
+    },
+    {
+      "type": "SUBSCRIPTION_PLAN",
+      "created_at": "2026-02-01T13:22:39.096Z",
+      "subscriptionPlanData": {
+        "name": "Platinum Membership Haircut",
+        "subscriptionPlanVariations": [
+          {
+            "type": "SUBSCRIPTION_PLAN_VARIATION",
+            "created_at": "2026-02-01T13:22:39.096Z",
+            "subscriptionPlanVariationData": {
+              "name": "Platinum Membership Haircut",
+              "phases": [
+                {
+                  "uid": "QDOJCS73S3XYL5BS2QMVCXLQ",
+                  "cadence": "MONTHLY",
+                  "ordinal": "0",
+                  "pricing": {
+                    "type": "RELATIVE",
+                    "discountIds": [
+                      "3TY7ACZFDPMCPRVNHCZYQE47"
+                    ]
+                  }
+                }
+              ],
+              "configuration": {
+                "buyer_allow_indefinite_pausing": true,
+                "buyer_max_cycles_to_skip": 0
+              },
+              "subscriptionPlanId": "TSHE4PYA5732HHUE3YG3FQJR"
+            },
+            "id": "PUHE4GTFY5J2BMLX3JFTP27Y",
+            "updatedAt": "2026-02-01T13:22:39.064Z",
+            "version": "1769952159064",
+            "isDeleted": false,
+            "presentAtAllLocations": true
+          }
+        ],
+        "eligibleItemIds": [
+          "H73VUPOESDIAVU54CBHWUR4U"
+        ],
+        "allItems": false
+      },
+      "id": "TSHE4PYA5732HHUE3YG3FQJR",
+      "updatedAt": "2026-02-01T13:22:39.064Z",
+      "version": "1769952159064",
+      "isDeleted": false,
+      "presentAtAllLocations": true
+    },
+    {
+      "type": "SUBSCRIPTION_PLAN",
+      "created_at": "2026-02-01T13:27:22.627Z",
+      "subscriptionPlanData": {
+        "name": "Platinum Membership Haircut + Beard",
+        "subscriptionPlanVariations": [
+          {
+            "type": "SUBSCRIPTION_PLAN_VARIATION",
+            "created_at": "2026-02-01T13:27:22.627Z",
+            "subscriptionPlanVariationData": {
+              "name": "Platinum Membership Haircut + Beard",
+              "phases": [
+                {
+                  "uid": "GAI6TMB47HZCZEFFJVVUJJ72",
+                  "cadence": "MONTHLY",
+                  "ordinal": "0",
+                  "pricing": {
+                    "type": "RELATIVE",
+                    "discountIds": [
+                      "EP4GX7UE2TIWMVRLGZDP43YD"
+                    ]
+                  }
+                }
+              ],
+              "configuration": {
+                "buyer_allow_indefinite_pausing": true,
+                "buyer_max_cycles_to_skip": 0
+              },
+              "subscriptionPlanId": "QALKFCB6FL5TSTCCKWE6VU57"
+            },
+            "id": "HATGGV4XB53Q6MXZHGO3ACJ5",
+            "updatedAt": "2026-02-01T13:27:22.58Z",
+            "version": "1769952442580",
+            "isDeleted": false,
+            "presentAtAllLocations": true
+          }
+        ],
+        "eligibleItemIds": [
+          "XF4QX5LZ3ORJIQCSQZISAIXY"
+        ],
+        "allItems": false
+      },
+      "id": "QALKFCB6FL5TSTCCKWE6VU57",
+      "updatedAt": "2026-02-01T13:27:22.58Z",
+      "version": "1769952442580",
+      "isDeleted": false,
+      "presentAtAllLocations": true
+    }
+  ],
+  "latestTime": "2026-02-02T16:09:30.513Z"
+}

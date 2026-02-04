@@ -1,0 +1,111 @@
+.main {
+    min-height: 100vh;
+    padding: 8rem 2rem 4rem; /* Top padding clears the fixed header */
+    background-color: var(--background);
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 3rem;
+    border-bottom: 1px solid var(--card-border);
+    padding-bottom: 1.5rem;
+}
+
+.title {
+    font-family: var(--font-oswald);
+    font-size: 2.5rem;
+    color: var(--primary-gold);
+    margin: 0;
+    text-transform: uppercase;
+}
+
+.logoutBtn {
+    background-color: transparent;
+    border: 1px solid var(--card-border);
+    color: var(--text-muted);
+    padding: 0.5rem 1.5rem;
+    font-family: var(--font-oswald);
+    text-transform: uppercase;
+    font-size: 0.875rem;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.logoutBtn:hover {
+    color: var(--foreground);
+    border-color: var(--primary-gold);
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+}
+
+@media (min-width: 1024px) {
+    .grid {
+        grid-template-columns: 1fr 2fr; /* Sidebar for profile, main area for content */
+    }
+}
+
+.card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 0.5rem;
+    padding: 2rem;
+}
+
+.profileCard {
+    height: fit-content;
+}
+
+.welcome {
+    font-size: 1.5rem;
+    color: var(--foreground);
+    margin-bottom: 1.5rem;
+    font-family: var(--font-oswald);
+    letter-spacing: 0.05em;
+}
+
+.detailRow {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+}
+
+.label {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.25rem;
+}
+
+.value {
+    color: var(--foreground);
+    font-size: 1rem;
+    font-family: var(--font-inter);
+}
+
+.sectionTitle {
+    font-size: 1.25rem;
+    color: var(--primary-gold);
+    margin-bottom: 1.5rem;
+    font-family: var(--font-oswald);
+    border-left: 3px solid var(--primary-gold);
+    padding-left: 1rem;
+}
+
+.emptyState {
+    text-align: center;
+    padding: 3rem;
+    background-color: rgba(255, 255, 255, 0.02);
+    border-radius: 0.5rem;
+    border: 1px dashed var(--card-border);
+    color: var(--text-muted);
+}

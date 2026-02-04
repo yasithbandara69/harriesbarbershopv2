@@ -1,6 +1,8 @@
 import Link from "next/link";
 import styles from "./page.module.css";
 import SplashScreen from "./components/SplashScreen";
+import AboutUs from "./components/AboutUs";
+import Subscriptions from "./components/Subscriptions";
 
 export default function Home() {
   return (
@@ -22,6 +24,8 @@ export default function Home() {
           </Link>
         </div>
       </section>
+      <AboutUs />
+      <Subscriptions />
     </main>
   );
 }

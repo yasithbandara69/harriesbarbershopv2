@@ -1,19 +1,48 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import styles from './header.module.css';
 import { usePathname } from 'next/navigation';
+import Modal from './Modal';
+import LoginForm from './auth/LoginForm';
+import SignupForm from './auth/SignupForm';
 
 export default function Header() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [showLoginModal, setShowLoginModal] = useState(false);
+    const [showSignupModal, setShowSignupModal] = useState(false);
     const pathname = usePathname();
+
+    // Close modals when route changes (e.g. successful login redirect)
+    useEffect(() => {
+        setShowLoginModal(false);
+        setShowSignupModal(false);
+        setMobileMenuOpen(false);
+    }, [pathname]);
 
     const navItems = [
         { name: "HOME", href: "/" },
         { name: "WORKS", href: "/#works" },
         { name: "SERVICES", href: "/#services" },
     ];
+
+    const openLogin = () => {
+        setShowSignupModal(false);
+        setShowLoginModal(true);
+        setMobileMenuOpen(false); // Close mobile menu if open
+    };
+
+    const openSignup = () => {
+        setShowLoginModal(false);
+        setShowSignupModal(true);
+        setMobileMenuOpen(false); // Close mobile menu if open
+    };
+
+    const closeModal = () => {
+        setShowLoginModal(false);
+        setShowSignupModal(false);
+    };
 
     return (
         <nav className={styles.header}>
@@ -23,7 +52,7 @@ export default function Header() {
                     <img 
                         src="/logo-header.png" 
                         alt="Harries Barbershop" 
-                        className={styles.logo} // Using our local logo asset but styled like source
+                        className={styles.logo} 
                     />
                 </Link>
                 
@@ -42,8 +71,20 @@ export default function Header() {
 
                 {/* Controls (Login, Signup, Book) */}
                 <div className={styles.controls}>
-                    <button className={styles.loginBtn}>LOGIN</button>
-                    <button className={styles.btnBook}>SIGN UP</button>
+                    <button 
+                        className={styles.loginBtn}
+                        onClick={openLogin}
+                        style={{ position: 'relative', zIndex: 60 }}
+                    >
+                        LOGIN
+                    </button>
+                    <button 
+                        className={styles.btnBook} // Keep style similar
+                        onClick={openSignup}
+                        style={{ marginRight: '0.5rem', position: 'relative', zIndex: 60 }} // Add a bit of spacing if needed
+                    >
+                        SIGN UP
+                    </button>
                     <Link href="/book" className={styles.btnBook}>
                         BOOK NOW
                     </Link>
@@ -79,11 +120,34 @@ export default function Header() {
                             {item.name}
                         </Link>
                     ))}
+                    <button 
+                        className={styles.mobileNavLink} 
+                        onClick={openLogin}
+                        style={{ textAlign: 'left', background: 'none', border: 'none', width: '100%', cursor: 'pointer' }}
+                    >
+                        LOGIN
+                    </button>
+                    <button 
+                        className={styles.btnBook} 
+                        onClick={openSignup}
+                        style={{ textAlign: 'center' }}
+                    >
+                        SIGN UP
+                    </button>
                     <Link href="/book" className={styles.btnBook} onClick={() => setMobileMenuOpen(false)}>
                         BOOK NOW
                     </Link>
                 </div>
             )}
+
+            {/* Modals */}
+            <Modal isOpen={showLoginModal} onClose={closeModal}>
+                <LoginForm onSwitchToSignup={openSignup} />
+            </Modal>
+
+            <Modal isOpen={showSignupModal} onClose={closeModal}>
+                <SignupForm onSwitchToLogin={openLogin} />
+            </Modal>
         </nav>
     );
 }
