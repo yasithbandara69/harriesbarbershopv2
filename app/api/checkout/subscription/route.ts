@@ -67,6 +67,51 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    // 1. Check if the plan is free (100% discount or $0 price)
+    const planResponse = await squareClient.catalog.object.get({ objectId: planId });
+    // Safe access for different SDK versions
+    const planResult = (planResponse as any).result || (planResponse as any).body || planResponse;
+    const planObject = planResult.object;
+    
+    const priceMoney = planObject?.subscriptionPlanData?.phases?.[0]?.recurringPriceMoney;
+    const priceAmount = priceMoney?.amount ? Number(priceMoney.amount) : 0; // default to 0 if undefined? No, usually typical plans have price. Assuming safe access.
+
+    // If price is 0, Bypass Checkout and Create Subscription Directly
+    if (priceAmount === 0) {
+        console.log(`Plan ${planId} is free. Creating subscription directly.`);
+        
+        const { subscription } = await squareClient.subscriptions.create({
+            idempotencyKey: randomUUID(),
+            locationId: locationId!,
+            planId: planId,
+            customerId: squareCustomerId,
+        } as any) as any;
+
+        // We can rely on the webhook to update Supabase, or do it here for immediate feedback.
+        // Doing it here ensures the user sees credits immediately on redirect.
+        
+        // Upsert into user_subscriptions (Mirroring webhook logic for speed)
+        // Find plan configured credits
+        let credits = 0;
+        const allPlans = SUBSCRIPTION_DATA.flatMap(cat => cat.plans);
+        const planData = allPlans.find(p => p.squarePlanId === planId);
+        if (planData) credits = planData.credits;
+
+        await supabase.from('user_subscriptions').upsert({
+            user_id: user.id,
+            square_subscription_id: subscription.id,
+            plan_id: planId,
+            status: subscription.status || 'ACTIVE',
+            credits: credits,
+            current_period_start: subscription.startDate,
+            current_period_end: subscription.chargedThroughDate,
+            updated_at: new Date().toISOString()
+        }, { onConflict: 'user_id' });
+
+        return NextResponse.redirect(`${process.env.NEXT_PUBLIC_BASE_URL || request.nextUrl.origin}/dashboard?subscriptionSuccess=true`);
+    }
+
+    // 2. If not free, generate Payment Link
     const { paymentLink } = await squareClient.checkout.paymentLinks.create({
       idempotencyKey: randomUUID(),
       order: {
@@ -75,7 +120,7 @@ export async function GET(request: NextRequest) {
         lineItems: lineItems
       },
       checkoutOptions: {
-        subscriptionPlanId: planId, // Correct field for subscriptions
+        subscriptionPlanId: planId,
         redirectUrl: `${process.env.NEXT_PUBLIC_BASE_URL || request.nextUrl.origin}/dashboard?subscriptionSuccess=true`,
         askForShippingAddress: false,
       },
