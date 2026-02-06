@@ -36,6 +36,7 @@ export async function GET(request: NextRequest) {
   // Lookup the plan in our internal data to find the corresponding Item Variation ID
   let itemVariationId: string | undefined;
   
+  console.log(`[Checkout] Processing Plan ID: ${planId}`);
   
   // Find the plan object
   for (const category of SUBSCRIPTION_DATA) {
@@ -45,6 +46,8 @@ export async function GET(request: NextRequest) {
           break;
       }
   }
+  
+  console.log(`[Checkout] Mapped itemVariationId: ${itemVariationId}`);
 
   // Construct Line Items
   const lineItems: any[] = [];
@@ -55,6 +58,7 @@ export async function GET(request: NextRequest) {
           quantity: "1"
       });
   } else {
+      console.log(`[Checkout] No itemVariationId found. Using fallback.`);
       // Fallback to dummy item if no mapping found (should not happen for configured plans)
       lineItems.push({
         name: "Subscription Enrollment",
@@ -67,52 +71,9 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // 1. Check if the plan is free (100% discount or $0 price)
-    const planResponse = await squareClient.catalog.object.get({ objectId: planId });
-    // Safe access for different SDK versions
-    const planResult = (planResponse as any).result || (planResponse as any).body || planResponse;
-    const planObject = planResult.object;
-    
-    const priceMoney = planObject?.subscriptionPlanData?.phases?.[0]?.recurringPriceMoney;
-    const priceAmount = priceMoney?.amount ? Number(priceMoney.amount) : 0; // default to 0 if undefined? No, usually typical plans have price. Assuming safe access.
-
-    // If price is 0, Bypass Checkout and Create Subscription Directly
-    if (priceAmount === 0) {
-        console.log(`Plan ${planId} is free. Creating subscription directly.`);
-        
-        const { subscription } = await squareClient.subscriptions.create({
-            idempotencyKey: randomUUID(),
-            locationId: locationId!,
-            planId: planId,
-            customerId: squareCustomerId,
-        } as any) as any;
-
-        // We can rely on the webhook to update Supabase, or do it here for immediate feedback.
-        // Doing it here ensures the user sees credits immediately on redirect.
-        
-        // Upsert into user_subscriptions (Mirroring webhook logic for speed)
-        // Find plan configured credits
-        let credits = 0;
-        const allPlans = SUBSCRIPTION_DATA.flatMap(cat => cat.plans);
-        const planData = allPlans.find(p => p.squarePlanId === planId);
-        if (planData) credits = planData.credits;
-
-        await supabase.from('user_subscriptions').upsert({
-            user_id: user.id,
-            square_subscription_id: subscription.id,
-            plan_id: planId,
-            status: subscription.status || 'ACTIVE',
-            credits: credits,
-            current_period_start: subscription.startDate,
-            current_period_end: subscription.chargedThroughDate,
-            updated_at: new Date().toISOString()
-        }, { onConflict: 'user_id' });
-
-        return NextResponse.redirect(`${process.env.NEXT_PUBLIC_BASE_URL || request.nextUrl.origin}/dashboard?subscriptionSuccess=true`);
-    }
-
-    // 2. If not free, generate Payment Link
-    const { paymentLink } = await squareClient.checkout.paymentLinks.create({
+    // Generate Payment Link
+    console.log(`[Checkout] Generating Payment Link for user ${user.email}`);
+    const body = {
       idempotencyKey: randomUUID(),
       order: {
         locationId: locationId!,
@@ -120,7 +81,6 @@ export async function GET(request: NextRequest) {
         lineItems: lineItems
       },
       checkoutOptions: {
-        subscriptionPlanId: planId,
         redirectUrl: `${process.env.NEXT_PUBLIC_BASE_URL || request.nextUrl.origin}/dashboard?subscriptionSuccess=true`,
         askForShippingAddress: false,
       },
@@ -132,7 +92,11 @@ export async function GET(request: NextRequest) {
            lastName: user.user_metadata?.last_name,
         }
       }
-    });
+    };
+    
+    // console.log("[Checkout] Payment Link Req:", JSON.stringify(body, (k,v) => typeof v === 'bigint' ? v.toString() : v, 2));
+
+    const { paymentLink } = await squareClient.checkout.paymentLinks.create(body);
 
     if (paymentLink?.url) {
        return NextResponse.redirect(paymentLink.url);
@@ -142,7 +106,15 @@ export async function GET(request: NextRequest) {
 
   } catch (error: any) {
     console.error("Square Checkout Error:", error);
-    // Parse Square error if possible
-    return NextResponse.json({ error: error.message || "An error occurred creating the checkout link" }, { status: 500 });
+    if (error.result) console.error("Result:", error.result);
+    if (error.errors) console.error("Errors:", JSON.stringify(error.errors));
+    
+    return NextResponse.json(
+        { 
+            error: error.message || "An error occurred creating the checkout link",
+            details: error.errors || error.result 
+        }, 
+        { status: 500 }
+    );
   }
 }

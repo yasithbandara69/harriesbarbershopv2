@@ -31,7 +31,7 @@ export const SUBSCRIPTION_DATA: ServiceCategory[] = [
     plans: [
       {
         id: 'gold-cut',
-        squarePlanId: 'KBSCWFLBQ4XFOKLB3SI5HNWY',
+        squarePlanId: 'LBZTK3K4MEBVIIWAVSURO2SK',
         itemVariationId: '476R3Q6R3TFKNNPQ2DYQ47KE', // Gold haircut subscription - $100
         serviceId: '5NSMYVMEE3XCXQ6TB5AYN2RM',
         tier: 'Gold',
@@ -48,7 +48,7 @@ export const SUBSCRIPTION_DATA: ServiceCategory[] = [
       },
       {
         id: 'plat-cut',
-        squarePlanId: 'PUHE4GTFY5J2BMLX3JFTP27Y',
+        squarePlanId: 'TSHE4PYA5732HHUE3YG3FQJR',
         itemVariationId: 'DFLWJUF5ECY32UDE7CBU6DQN', // Platinum Haircut Subscription - $180
         serviceId: '5NSMYVMEE3XCXQ6TB5AYN2RM',
         tier: 'Platinum',
@@ -73,7 +73,7 @@ export const SUBSCRIPTION_DATA: ServiceCategory[] = [
     plans: [
       {
         id: 'gold-combo',
-        squarePlanId: 'VAHMD5HHO2SV63VBVG5CGWOM',
+        squarePlanId: 'BJKQSNDFNBZHBDXMSF43F7I3',
         itemVariationId: 'TZF5UHVBPH47RLICWPFHQA55', // Gold Subscription Haircut + Beard - $130
         serviceId: 'SMVJNPINNCCMWRLDQTDICE25',
         tier: 'Gold',
@@ -90,7 +90,7 @@ export const SUBSCRIPTION_DATA: ServiceCategory[] = [
       },
       {
         id: 'plat-combo',
-        squarePlanId: 'HATGGV4XB53Q6MXZHGO3ACJ5',
+        squarePlanId: 'QALKFCB6FL5TSTCCKWE6VU57',
         itemVariationId: '2ALT23O67AI77UJ5LXYYTL4I', // Platinum Haircut + Beard Subscription - $240
         serviceId: 'SMVJNPINNCCMWRLDQTDICE25',
         tier: 'Platinum',
