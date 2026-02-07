@@ -20,35 +20,41 @@ const squareClient = new SquareClient({
   environment: SquareEnvironment.Production, 
 });
 
-async function listPlanVariations() {
-    console.log("Fetching Subscription Plans...");
+const PLAN_ID = 'LBZTK3K4MEBVIIWAVSURO2SK'; // Gold Plan ID
+
+async function listVariations() {
+    console.log(`Fetching Plan: ${PLAN_ID}`);
     try {
-        const response = await squareClient.catalog.searchCatalogObjects({
-            objectTypes: ["SUBSCRIPTION_PLAN"],
-            includeDeletedObjects: false
+        const response = await squareClient.catalog.object.get({
+            objectId: PLAN_ID
         });
 
-        const result = response.result || response.body || response;
-        if (result.objects) {
-            result.objects.forEach(obj => {
-                const planData = obj.subscriptionPlanData;
-                console.log(`Plan: ${planData.name} | ID: ${obj.id}`);
-                
-                if (planData.subscriptionPlanVariations) {
-                    planData.subscriptionPlanVariations.forEach(v => {
-                        console.log(`   Variation ID: ${v.id} | Name: ${v.subscriptionPlanVariationData?.name}`);
-                        // Check phases for price
-                        const price = v.subscriptionPlanVariationData?.phases?.[0]?.recurringPriceMoney?.amount;
-                        console.log(`   Price: ${price}`);
-                    });
-                }
-                console.log('---');
-            });
+        const obj = response.result?.object || response.body?.object || response.object;
+        if (obj) {
+            console.log(`Plan Name: ${obj.subscriptionPlanData.name}`);
+            const variations = obj.subscriptionPlanData.subscriptionPlanVariations;
+            if (variations) {
+                variations.forEach(v => {
+                    console.log(`--------------------------------------------------`);
+                    console.log(`Variation ID: ${v.id}`);
+                    console.log(`Name: ${v.subscriptionPlanVariationData.name}`);
+                    const phases = v.subscriptionPlanVariationData.phases;
+                    if (phases && phases[0]) {
+                        if (phases[0].recurringPriceMoney) {
+                             console.log(`Price: ${phases[0].recurringPriceMoney.amount} ${phases[0].recurringPriceMoney.currency}`);
+                        } else {
+                            console.log(`Price Type: ${phases[0].pricing?.type} (Likely Varies by Item)`);
+                        }
+                    }
+                });
+            } else {
+                console.log("No variations found (weird).");
+            }
         }
 
     } catch (e) {
-        console.error("Error fetching plans:", e);
+        console.error("Error:", e);
     }
 }
 
-listPlanVariations();
+listVariations();
