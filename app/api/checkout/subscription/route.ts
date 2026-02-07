@@ -97,9 +97,10 @@ export async function GET(request: NextRequest) {
       }
     };
     
-    // Pass the Subscription Plan Variation ID if available
-    if (subscriptionPlanVariationId) {
-        body.checkoutOptions.subscriptionPlanId = subscriptionPlanVariationId;
+    // Pass the Subscription Plan ID (the container ID, e.g. "Gold Membership")
+    // Square links this to the specific Variation via the Item in the cart.
+    if (planId) {
+        body.checkoutOptions.subscriptionPlanId = planId;
     }
 
     const { paymentLink } = await squareClient.checkout.paymentLinks.create(body);
