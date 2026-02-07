@@ -56,9 +56,22 @@ export async function GET(request: NextRequest) {
   const lineItems: any[] = [];
   if (itemVariationId) {
       // If we have a specific item mapped, use it. Pass quantity 1.
+      // FORCE the price to match the plan price, in case the item is $0 (like a booking dummy)
+      // Retrieve the plan price from the found object logic above would be better, but let's re-find it or use a variable.
+      
+      let priceAmount = BigInt(0);
+      const plan = SUBSCRIPTION_DATA.flatMap(c => c.plans).find(p => p.squarePlanId === planId);
+      if (plan) {
+          priceAmount = BigInt(Math.round(plan.price * 100)); // Convert to cents
+      }
+
       lineItems.push({
           catalogObjectId: itemVariationId,
-          quantity: "1"
+          quantity: "1",
+          basePriceMoney: {
+            amount: priceAmount,
+            currency: "AUD"
+          }
       });
   } else {
       console.log(`[Checkout] No itemVariationId found. Using fallback.`);
@@ -87,14 +100,17 @@ export async function GET(request: NextRequest) {
         redirectUrl: `${process.env.NEXT_PUBLIC_BASE_URL || request.nextUrl.origin}/dashboard?subscriptionSuccess=true`,
         askForShippingAddress: false,
       },
+      /*
       prePopulatedData: {
         buyerEmail: user.email,
+        // Phone/Address often trigger 422 if format is strictly validated by Square and data is loose
         buyerPhoneNumber: user.user_metadata?.phone,
         buyerAddress: {
            firstName: user.user_metadata?.first_name,
            lastName: user.user_metadata?.last_name,
         }
       }
+      */
     };
     
     // Pass the Subscription Plan Variation ID
@@ -114,8 +130,10 @@ export async function GET(request: NextRequest) {
 
   } catch (error: any) {
     console.error("Square Checkout Error:", error);
-    if (error.result) console.error("Result:", error.result);
-    if (error.errors) console.error("Errors:", JSON.stringify(error.errors));
+    if (error.result) console.error("Result:", JSON.stringify(error.result, (key, value) =>
+        typeof value === 'bigint' ? value.toString() : value // Handle BigInt
+    , 2));
+    if (error.errors) console.error("Errors:", JSON.stringify(error.errors, null, 2));
     
     return NextResponse.json(
         { 
