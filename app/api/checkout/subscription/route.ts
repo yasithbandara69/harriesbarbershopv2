@@ -33,19 +33,22 @@ export async function GET(request: NextRequest) {
      return NextResponse.json({ error: "No Square Customer ID found for user." }, { status: 400 });
   }
 
-  // Lookup the plan in our internal data to find the corresponding Item Variation ID
+  // Lookup the plan in our internal data to find the corresponding Item Variation ID and Subscription Variation ID
   let itemVariationId: string | undefined;
+  let subscriptionPlanVariationId: string | undefined;
   
   console.log(`[Checkout] Processing Plan ID: ${planId}`);
   
   // Find the plan object
   for (const category of SUBSCRIPTION_DATA) {
       const found = category.plans.find(p => p.squarePlanId === planId);
-      if (found && found.itemVariationId) {
+      if (found) {
           itemVariationId = found.itemVariationId;
+          subscriptionPlanVariationId = found.squarePlanVariationId;
           break;
       }
   }
+  console.log(`[Checkout] Mapped subscriptionPlanVariationId: ${subscriptionPlanVariationId}`);
   
   console.log(`[Checkout] Mapped itemVariationId: ${itemVariationId}`);
 
@@ -73,7 +76,7 @@ export async function GET(request: NextRequest) {
   try {
     // Generate Payment Link
     console.log(`[Checkout] Generating Payment Link for user ${user.email}`);
-    const body = {
+    const body: any = {
       idempotencyKey: randomUUID(),
       order: {
         locationId: locationId!,
@@ -94,7 +97,10 @@ export async function GET(request: NextRequest) {
       }
     };
     
-    // console.log("[Checkout] Payment Link Req:", JSON.stringify(body, (k,v) => typeof v === 'bigint' ? v.toString() : v, 2));
+    // Pass the Subscription Plan Variation ID if available
+    if (subscriptionPlanVariationId) {
+        body.checkoutOptions.subscriptionPlanId = subscriptionPlanVariationId;
+    }
 
     const { paymentLink } = await squareClient.checkout.paymentLinks.create(body);
 

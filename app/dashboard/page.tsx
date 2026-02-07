@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { logout } from "@/app/auth/actions";
 import styles from "./dashboard.module.css";
 import Link from "next/link";
+import { Suspense } from "react";
+import SubscriptionSuccess from "../components/SubscriptionSuccess";
 
 export default async function DashboardPage() {
     const supabase = await createClient();
@@ -40,6 +42,10 @@ export default async function DashboardPage() {
                     </button>
                 </form>
             </header>
+
+            <Suspense fallback={null}>
+                <SubscriptionSuccess />
+            </Suspense>
 
             <div className={styles.grid}>
                 {/* Profile Section */}
