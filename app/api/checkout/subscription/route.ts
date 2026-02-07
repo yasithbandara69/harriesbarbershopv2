@@ -56,13 +56,41 @@ export async function GET(request: NextRequest) {
   const lineItems: any[] = [];
   if (itemVariationId) {
       // If we have a specific item mapped, use it. Pass quantity 1.
-      // FORCE the price to match the plan price, in case the item is $0 (like a booking dummy)
-      // Retrieve the plan price from the found object logic above would be better, but let's re-find it or use a variable.
-      
+      // Fetch the REAL price from Square to ensure we charge what is configured in the Dashboard
+      // This allows for dynamic pricing (e.g. $1 testing, discounts, updates) without redeploying.
       let priceAmount = BigInt(0);
-      const plan = SUBSCRIPTION_DATA.flatMap(c => c.plans).find(p => p.squarePlanId === planId);
-      if (plan) {
-          priceAmount = BigInt(Math.round(plan.price * 100)); // Convert to cents
+      let priceCurrency = "AUD";
+
+      if (subscriptionPlanVariationId) {
+        try {
+            console.log(`[Checkout] Fetching price for Subscription Variation: ${subscriptionPlanVariationId}`);
+            const response = await squareClient.catalog.object.get({
+                objectId: subscriptionPlanVariationId
+            });
+            
+            // Handle different SDK response structures
+            // @ts-ignore - The Square SDK types can be inconsistent regarding 'result' vs direct body
+            const objectData = response.result?.object || response.body?.object || response.object;
+
+            if (objectData?.subscriptionPlanVariationData?.phases?.[0]?.recurringPriceMoney) {
+                const money = objectData.subscriptionPlanVariationData.phases[0].recurringPriceMoney;
+                if (money.amount !== undefined && money.currency !== undefined) {
+                    priceAmount = money.amount;
+                    priceCurrency = money.currency;
+                    console.log(`[Checkout] Fetched price from Square: ${priceAmount} ${priceCurrency}`);
+                }
+            } else {
+                console.warn("[Checkout] Could not find price in subscription plan variation data.");
+            }
+        } catch (e) {
+            console.error("[Checkout] Failed to fetch subscription price from Square:", e);
+            // Fallback to internal data
+            const plan = SUBSCRIPTION_DATA.flatMap(c => c.plans).find(p => p.squarePlanId === planId);
+            if (plan) {
+                priceAmount = BigInt(Math.round(plan.price * 100));
+                console.log(`[Checkout] Used fallback internal price: ${priceAmount}`);
+            }
+        }
       }
 
       lineItems.push({
@@ -70,7 +98,7 @@ export async function GET(request: NextRequest) {
           quantity: "1",
           basePriceMoney: {
             amount: priceAmount,
-            currency: "AUD"
+            currency: priceCurrency
           }
       });
   } else {
