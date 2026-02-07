@@ -127,28 +127,25 @@ export async function GET(request: NextRequest) {
   try {
     // Generate Payment Link
     console.log(`[Checkout] Generating Payment Link for user ${user.email}`);
+    // HARDCODED DIAGNOSTIC PAYLOAD
+    // Matches scripts/test-subscription-checkout.js EXACTLY
     const body: any = {
       idempotencyKey: randomUUID(),
       order: {
         locationId: locationId!,
-        customerId: squareCustomerId,
-        lineItems: lineItems,
+        // customerId: "NO_CUSTOMER_ID", // Explicitly Guest
+        lineItems: [
+            {
+                catalogObjectId: '476R3Q6R3TFKNNPQ2DYQ47KE', // Hardcoded Item Variation
+                quantity: "1"
+            }
+        ]
       },
       checkoutOptions: {
         redirectUrl: `${process.env.NEXT_PUBLIC_BASE_URL || request.nextUrl.origin}/dashboard?subscriptionSuccess=true`,
         askForShippingAddress: false,
-      },
-      /*
-      prePopulatedData: {
-        buyerEmail: user.email,
-        // Phone/Address often trigger 422 if format is strictly validated by Square and data is loose
-        buyerPhoneNumber: user.user_metadata?.phone,
-        buyerAddress: {
-           firstName: user.user_metadata?.first_name,
-           lastName: user.user_metadata?.last_name,
-        }
+        subscriptionPlanId: 'KBSCWFLBQ4XFOKLB3SI5HNWY' // Hardcoded Plan Variation
       }
-      */
     };
     
     // Pass the Subscription Plan Variation ID

@@ -33,6 +33,9 @@ async function checkItem() {
 
         if (objectData) {
             console.log(`Item Name: ${objectData.itemData.name}`);
+            console.log(`Present at all locations: ${objectData.presentAtAllLocations}`);
+            console.log(`Present at Location IDs: ${objectData.presentAtLocationIds}`);
+            
             const variations = objectData.itemData.variations;
             if (variations) {
                 variations.forEach(v => {
@@ -40,6 +43,8 @@ async function checkItem() {
                     console.log(`Name: ${v.itemVariationData.name}`);
                     const price = v.itemVariationData.priceMoney;
                     console.log(`Price: ${price?.amount} ${price?.currency}`);
+                    console.log(`Var present at all locations: ${v.presentAtAllLocations}`);
+                    console.log(`Var present at Location IDs: ${v.presentAtLocationIds}`);
                 });
             }
         } else {
