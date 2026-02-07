@@ -142,11 +142,16 @@ export async function GET(request: NextRequest) {
         ]
       },
       checkoutOptions: {
-        redirectUrl: `${process.env.NEXT_PUBLIC_BASE_URL || request.nextUrl.origin}/dashboard?subscriptionSuccess=true`,
+        redirectUrl: "https://google.com", // Match script exactly
         askForShippingAddress: false,
         subscriptionPlanId: 'KBSCWFLBQ4XFOKLB3SI5HNWY' // Hardcoded Plan Variation
       }
     };
+    
+    console.log("----------------------------------------------------------------");
+    console.log("[Checkout] DIAGNOSTIC PAYLOAD:");
+    console.log(JSON.stringify(body, null, 2));
+    console.log("----------------------------------------------------------------");
     
     // Pass the Subscription Plan Variation ID
     // The previous error "incorrect object type SUBSCRIPTION_PLAN" for planId confirms
