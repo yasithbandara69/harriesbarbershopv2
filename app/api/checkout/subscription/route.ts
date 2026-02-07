@@ -131,8 +131,8 @@ export async function GET(request: NextRequest) {
       idempotencyKey: randomUUID(),
       order: {
         locationId: locationId!,
-        customerId: squareCustomerId,
-        lineItems: lineItems
+        // customerId: squareCustomerId, // Temporarily remove to test if specific customer is causing error (e.g. duplicate sub)
+        lineItems: lineItems,
       },
       checkoutOptions: {
         redirectUrl: `${process.env.NEXT_PUBLIC_BASE_URL || request.nextUrl.origin}/dashboard?subscriptionSuccess=true`,
