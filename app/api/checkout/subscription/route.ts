@@ -133,29 +133,16 @@ export async function GET(request: NextRequest) {
       idempotencyKey: randomUUID(),
       order: {
         locationId: locationId!,
-        // customerId: "NO_CUSTOMER_ID", // Explicitly Guest
-        lineItems: [
-            {
-                catalogObjectId: '476R3Q6R3TFKNNPQ2DYQ47KE', // Hardcoded Item Variation
-                quantity: "1"
-            }
-        ]
+        customerId: squareCustomerId, // Link to the logged-in user!
+        lineItems: lineItems // Use the dynamically constructed line items
       },
       checkoutOptions: {
-        redirectUrl: "https://google.com", // Match script exactly
+        redirectUrl: `${request.nextUrl.origin}/dashboard`, // Redirect back to dashboard
         askForShippingAddress: false,
-        subscriptionPlanId: 'KBSCWFLBQ4XFOKLB3SI5HNWY' // Hardcoded Plan Variation
       }
     };
     
-    console.log("----------------------------------------------------------------");
-    console.log("[Checkout] DIAGNOSTIC PAYLOAD:");
-    console.log(JSON.stringify(body, null, 2));
-    console.log("----------------------------------------------------------------");
-    
-    // Pass the Subscription Plan Variation ID
-    // The previous error "incorrect object type SUBSCRIPTION_PLAN" for planId confirms
-    // that this field expects the VARIATION ID.
+    // Pass the Subscription Plan Variation ID if available
     if (subscriptionPlanVariationId) {
         body.checkoutOptions.subscriptionPlanId = subscriptionPlanVariationId;
     }
