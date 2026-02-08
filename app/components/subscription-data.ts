@@ -78,7 +78,7 @@ export const SUBSCRIPTION_DATA: ServiceCategory[] = [
         id: 'gold-combo',
         squarePlanId: 'BJKQSNDFNBZHBDXMSF43F7I3',
         squarePlanVariationId: 'VAHMD5HHO2SV63VBVG5CGWOM',
-        itemVariationId: 'TZF5UHVBPH47RLICWPFHQA55', // Gold Subscription Haircut + Beard - $130
+        itemVariationId: 'UTYAA22JQROPKLS4KZ4TSQZI', // Gold Membership Haircut + Beard - Billing
         serviceId: 'SMVJNPINNCCMWRLDQTDICE25',
         tier: 'Gold',
         price: 130,

@@ -33,8 +33,9 @@ async function checkItem() {
 
         if (objectData) {
             console.log(`Item Name: ${objectData.itemData.name}`);
-            console.log(`Present at all locations: ${objectData.presentAtAllLocations}`);
-            console.log(`Present at Location IDs: ${objectData.presentAtLocationIds}`);
+            console.log(`Product Type: ${objectData.itemData.productType}`);
+            console.log(`Type: ${objectData.type}`);
+            console.log(`Is Taxable: ${objectData.itemData.taxIds ? 'Yes' : 'No'}`);
             
             const variations = objectData.itemData.variations;
             if (variations) {
