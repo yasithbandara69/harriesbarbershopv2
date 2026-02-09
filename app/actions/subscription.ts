@@ -49,7 +49,15 @@ export async function syncSubscriptionStatus() {
     // Assuming one active subscription per user for now
     const sub = subscriptions[0]; // Logic could be improved to handle multiple
 
-    const planId = sub.planId;
+    const subAny = sub as any;
+    const planId = subAny.planId || subAny.plan_id;
+
+    if (!planId) {
+         const subStr = JSON.stringify(subAny, (key, value) => 
+            typeof value === 'bigint' ? value.toString() : value
+         );
+         return { error: `Subscription found but Plan ID missing. Debug: ${subStr}` };
+    }
     
     // Determine Credits
     const allPlans = SUBSCRIPTION_DATA.flatMap(cat => cat.plans);
