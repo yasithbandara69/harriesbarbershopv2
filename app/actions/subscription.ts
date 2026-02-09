@@ -25,65 +25,66 @@ export async function syncSubscriptionStatus() {
   }
 
   try {
-    // 2. Reverse Lookup: Since Square sometimes omits planId in the response,
-    // we iterate through our known plans and ask Square: "Does user have THIS plan?"
-    const allPlans = SUBSCRIPTION_DATA.flatMap(cat => cat.plans);
-    
-    let foundSubscription: any = null;
-    let foundPlanId: string | null = null;
-    let foundCredits = 0;
-
-    // parallel requests could be faster, but let's be sequential for safety/simplicity first
-    // or Promise.all if we want speed. There are only ~4 plans.
-    
-    const searchPromises = allPlans.map(async (plan) => {
-        try {
-            const response = await squareClient.subscriptions.search({
-                query: {
-                    filter: {
-                        customerIds: [profile.square_customer_id],
-                        planIds: [plan.squarePlanId] // Search specifically for this plan
-                    }
-                }
-            });
-            
-            const result = response as any;
-            const subs = result.subscriptions || result.body?.subscriptions || [];
-            const activeSub = subs.find((s: any) => s.status === 'ACTIVE');
-            
-            if (activeSub) {
-                return { sub: activeSub, plan };
-            }
-        } catch (e) {
-            console.error(`Error searching plan ${plan.squarePlanId}:`, e);
+    // 2. Fetch all subscriptions for the customer
+    const response = await squareClient.subscriptions.search({
+      query: {
+        filter: {
+          customerIds: [profile.square_customer_id]
         }
-        return null;
+      }
     });
 
-    const results = await Promise.all(searchPromises);
-    const match = results.find(r => r !== null);
+    const result = response as any;
+    let subscriptions = result.subscriptions || result.body?.subscriptions || [];
+    
+    // Filter for ACTIVE status in memory 
+    const activeSub = subscriptions.find((s: any) => s.status === 'ACTIVE');
 
-    if (match) {
-        foundSubscription = match.sub;
-        foundPlanId = match.plan.squarePlanId;
-        foundCredits = match.plan.credits;
+    if (!activeSub) {
+        return { message: "No active subscriptions found." };
     }
 
-    if (!foundSubscription || !foundPlanId) {
-        return { message: "No active subscriptions found for known plans." };
+    // 3. Identify Plan ID or Fallback
+    const subAny = activeSub as any;
+    let planId = subAny.planId || subAny.plan_id;
+    let foundPlan = null;
+    
+    const allPlans = SUBSCRIPTION_DATA.flatMap(cat => cat.plans);
+
+    if (planId) {
+        foundPlan = allPlans.find(p => p.squarePlanId === activeSub.planId);
+    } 
+
+    // Fallback: Check order_template_id if planId is missing or not found
+    if (!foundPlan && subAny.orderTemplateId) {
+         foundPlan = allPlans.find(p => p.squarePlanVariationId === subAny.orderTemplateId);
+         if (foundPlan) {
+             planId = foundPlan.squarePlanId; // Found it!
+         }
+    }
+    
+    // Last Resort Fallback: If still unknown but active, default to Gold (2 credits)
+    // This handles the case where Plan ID is null but subscription is valid.
+    let credits = 2; 
+    if (foundPlan) {
+        credits = foundPlan.credits;
+    } else {
+        console.warn(`Active subscription found but plan unknown. ID: ${activeSub.id}. Defaulting to 2 credits.`);
+        // We might want to store 'UNKNOWN_PLAN' or similar
+        if (!planId) planId = 'unknown-plan-fallback';
     }
 
-    // 3. Update Database using the identified Plan ID
+    // 4. Update Database
     const { error } = await supabase
         .from('user_subscriptions')
         .upsert({
             user_id: user.id,
-            square_subscription_id: foundSubscription.id,
-            plan_id: foundPlanId,
-            status: foundSubscription.status,
-            credits: foundCredits,
-            current_period_start: foundSubscription.startDate,
-            current_period_end: foundSubscription.chargedThroughDate,
+            square_subscription_id: activeSub.id,
+            plan_id: planId,
+            status: activeSub.status,
+            credits: credits,
+            current_period_start: activeSub.startDate,
+            current_period_end: activeSub.chargedThroughDate,
             updated_at: new Date().toISOString()
         }, { onConflict: 'user_id' }); 
         
