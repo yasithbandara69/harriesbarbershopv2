@@ -26,22 +26,18 @@ async function debugSubscription() {
     console.log(`Fetching Subscription: ${SUB_ID}...`);
     try {
         const response = await squareClient.subscriptions.retrieve({ subscriptionId: SUB_ID });
-        const sub = response.result?.subscription || response.body?.subscription || response.subscription;
-        
+        const sub = response.result?.subscription || response.body?.subscription;
+
         if (!sub) {
             console.log("Subscription NOT FOUND.");
             return;
         }
 
-        console.log("Subscription Keys:", Object.keys(sub));
-        console.log("sub.planId (camel):", sub.planId);
-        console.log("sub.plan_id (snake):", sub.plan_id);
-        
-        // Safe stringify
-        const safeSub = JSON.stringify(sub, (key, value) => 
+        console.log("--- RAW SUBSCRIPTION DATA ---");
+        // Safe stringify with BigInt support
+        console.log(JSON.stringify(sub, (key, value) => 
             typeof value === 'bigint' ? value.toString() : value
-        , 2);
-        console.log("Full Object:", safeSub);
+        , 2));
 
     } catch (e) {
         console.error("Error found:", e);

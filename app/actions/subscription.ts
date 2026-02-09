@@ -46,32 +46,30 @@ export async function syncSubscriptionStatus() {
 
     // 3. Identify Plan ID or Fallback
     const subAny = activeSub as any;
-    let planId = subAny.planId || subAny.plan_id;
+    let planId = subAny.planId || subAny.plan_id || subAny.plan_variation_id; 
     let foundPlan = null;
     
     const allPlans = SUBSCRIPTION_DATA.flatMap(cat => cat.plans);
 
     if (planId) {
-        foundPlan = allPlans.find(p => p.squarePlanId === activeSub.planId);
+        // partial match check? No, IDs are exact.
+        foundPlan = allPlans.find(p => p.squarePlanId === planId || p.squarePlanVariationId === planId);
     } 
 
     // Fallback: Check order_template_id if planId is missing or not found
     if (!foundPlan && subAny.orderTemplateId) {
          foundPlan = allPlans.find(p => p.squarePlanVariationId === subAny.orderTemplateId);
-         if (foundPlan) {
-             planId = foundPlan.squarePlanId; // Found it!
-         }
     }
     
-    // Last Resort Fallback: If still unknown but active, default to Gold (2 credits)
-    // This handles the case where Plan ID is null but subscription is valid.
-    let credits = 2; 
     if (foundPlan) {
-        credits = foundPlan.credits;
+        planId = foundPlan.squarePlanId; // Normalize to our Plan ID
     } else {
-        console.warn(`Active subscription found but plan unknown. ID: ${activeSub.id}. Defaulting to 2 credits.`);
-        // We might want to store 'UNKNOWN_PLAN' or similar
-        if (!planId) planId = 'unknown-plan-fallback';
+        // If we still can't find it, we can't safely assign credits.
+        // The user explicitly asked to "not assume". 
+        // So we return an error if we genuinely can't identify the plan.
+        const subDebug = JSON.stringify(subAny, (key, value) => typeof value === 'bigint' ? value.toString() : value);
+        console.error(`Could not identify plan for subscription ${activeSub.id}. Data: ${subDebug}`);
+        return { error: "Subscription active but Plan not recognized. Contact support." };
     }
 
     // 4. Update Database
@@ -82,7 +80,7 @@ export async function syncSubscriptionStatus() {
             square_subscription_id: activeSub.id,
             plan_id: planId,
             status: activeSub.status,
-            credits: credits,
+            credits: foundPlan.credits,
             current_period_start: activeSub.startDate,
             current_period_end: activeSub.chargedThroughDate,
             updated_at: new Date().toISOString()

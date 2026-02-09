@@ -69,7 +69,7 @@ export default function MemberBookingPage() {
         }
 
         if (!foundPlan || !foundPlan.serviceId) {
-            setError("Could not identify your membership service.");
+            setError("Could not identify your membership service. Please contact support.");
             setLoading(false);
             return;
         }
