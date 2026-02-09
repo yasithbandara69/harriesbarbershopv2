@@ -61,7 +61,7 @@ export default function MemberBookingPage() {
         // Find Plan Config
         let foundPlan = null;
         for (const cat of SUBSCRIPTION_DATA) {
-            const p = cat.plans.find(x => x.squarePlanId === sub.plan_id);
+            const p = cat.plans.find(x => x.squarePlanId === sub.plan_id || x.squarePlanVariationId === sub.plan_id);
             if (p) {
                 foundPlan = p;
                 break;
