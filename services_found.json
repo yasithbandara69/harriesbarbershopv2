@@ -1,0 +1,182 @@
+[
+  {
+    "name": "Haircut & Beard",
+    "id": "XF4QX5LZ3ORJIQCSQZISAIXY",
+    "productType": "APPOINTMENTS_SERVICE",
+    "variations": [
+      {
+        "name": "Regular",
+        "id": "MAZ7Q6RYNFFWIIYV4CCHZKE4",
+        "durationMin": 60,
+        "price": 70,
+        "bookable": true
+      }
+    ]
+  },
+  {
+    "name": "Haircut",
+    "id": "H73VUPOESDIAVU54CBHWUR4U",
+    "productType": "APPOINTMENTS_SERVICE",
+    "variations": [
+      {
+        "name": "Regular",
+        "id": "7XYLQAAOUOKQF3BXTWFHDPWB",
+        "durationMin": 45,
+        "price": 55,
+        "bookable": true
+      }
+    ]
+  },
+  {
+    "name": "Beard & Trim Lineup",
+    "id": "L5AKWO4AUTZMBAWEVMQRSFTV",
+    "productType": "APPOINTMENTS_SERVICE",
+    "variations": [
+      {
+        "name": "Regular",
+        "id": "7JJX3GZQDG2IXY5UFSH7LAHL",
+        "durationMin": 30,
+        "price": 30,
+        "bookable": true
+      }
+    ]
+  },
+  {
+    "name": "Haircut & Beard by Kavish",
+    "id": "V5EUD7PNM3GPZBDYKHRJ3A7H",
+    "productType": "APPOINTMENTS_SERVICE",
+    "variations": [
+      {
+        "name": "Regular",
+        "id": "V56HLVJUNW5BJ2EYUZNHYBO2",
+        "durationMin": 90,
+        "price": 50,
+        "bookable": true
+      }
+    ]
+  },
+  {
+    "name": "Haircut by Kavish",
+    "id": "SH7NCDVIN6EUD56Y4ACEKLL2",
+    "productType": "APPOINTMENTS_SERVICE",
+    "variations": [
+      {
+        "name": "Regular",
+        "id": "KZAEGVTRK74GBL5QX2JDMX53",
+        "durationMin": 75,
+        "price": 35,
+        "bookable": true
+      }
+    ]
+  },
+  {
+    "name": "Beard Trim & Lineup by Kavish",
+    "id": "TNL5OS2HA542VCJ637NSQZQM",
+    "productType": "APPOINTMENTS_SERVICE",
+    "variations": [
+      {
+        "name": "Regular",
+        "id": "QBCPSJRVAXZIWNCQUC5WWIKF",
+        "durationMin": 20,
+        "price": 25,
+        "bookable": true
+      }
+    ]
+  },
+  {
+    "name": "Gold haircut subscription",
+    "id": "UPWV6SLJEPID5SUZ4LIFXV6E",
+    "productType": "APPOINTMENTS_SERVICE",
+    "variations": [
+      {
+        "name": "Regular",
+        "id": "476R3Q6R3TFKNNPQ2DYQ47KE",
+        "durationMin": 45,
+        "price": 1,
+        "bookable": false
+      }
+    ]
+  },
+  {
+    "name": "Gold Subscription Haircut + Beard",
+    "id": "TITG74PL4GYTDSHXADVYLVWQ",
+    "productType": "APPOINTMENTS_SERVICE",
+    "variations": [
+      {
+        "name": "Regular",
+        "id": "TZF5UHVBPH47RLICWPFHQA55",
+        "durationMin": 60,
+        "price": 130,
+        "bookable": false
+      }
+    ]
+  },
+  {
+    "name": "Platinum Haircut Subscription",
+    "id": "QVCTEA53AQCQKN7H5PPDQMEU",
+    "productType": "APPOINTMENTS_SERVICE",
+    "variations": [
+      {
+        "name": "Regular",
+        "id": "DFLWJUF5ECY32UDE7CBU6DQN",
+        "durationMin": 45,
+        "price": 180,
+        "bookable": false
+      }
+    ]
+  },
+  {
+    "name": "Platinum Haircut + Beard Subscription",
+    "id": "5FATHIGC3CBRYVRCDTYKYE7S",
+    "productType": "APPOINTMENTS_SERVICE",
+    "variations": [
+      {
+        "name": "Regular",
+        "id": "2ALT23O67AI77UJ5LXYYTL4I",
+        "durationMin": 60,
+        "price": 240,
+        "bookable": false
+      }
+    ]
+  },
+  {
+    "name": "Subscription Haircut",
+    "id": "5NSMYVMEE3XCXQ6TB5AYN2RM",
+    "productType": "APPOINTMENTS_SERVICE",
+    "variations": [
+      {
+        "name": "Regular",
+        "id": "IG3KC7ZQIDZFPETUY3UWRPTU",
+        "durationMin": 45,
+        "price": 0,
+        "bookable": false
+      }
+    ]
+  },
+  {
+    "name": "Subscription Haircut + beard",
+    "id": "SMVJNPINNCCMWRLDQTDICE25",
+    "productType": "APPOINTMENTS_SERVICE",
+    "variations": [
+      {
+        "name": "Regular",
+        "id": "6ZJHSA7CEIIK2MAYR4OBTNUW",
+        "durationMin": 60,
+        "price": 0,
+        "bookable": false
+      }
+    ]
+  },
+  {
+    "name": "Gold membership haircut fee",
+    "id": "CV4CGMIKAI7YDVNECRYTS2XN",
+    "productType": "LEGACY_SQUARE_ONLINE_SERVICE",
+    "variations": []
+  },
+  {
+    "name": "Gold Membership Haircut + Beard - Billing",
+    "id": "SSBAYFYLFPOGG6WESVR2JPL5",
+    "productType": "REGULAR",
+    "variations": []
+  }
+]
