@@ -70,11 +70,11 @@ export async function syncSubscriptionStatus() {
         
         // SAFE JSON STRINGIFY to handle BigInts
         const replacer = (key: string, value: any) => typeof value === 'bigint' ? value.toString() : value;
-        const subDebug = JSON.stringify(subAny, replacer);
+        const subDebug = JSON.stringify(subAny, replacer, 2);
         
-        const debugInfo = `PlanId=${subAny.planId}, VarId=${subAny.plan_variation_id}, TplId=${subAny.orderTemplateId}`;
-        console.error(`Could not identify plan for subscription ${activeSub.id}. Data: ${subDebug}`);
-        return { error: `Subscription detected but Plan Config missing. ID: ${debugInfo}` };
+        console.error(`Could not identify plan for subscription ${activeSub.id}. keys: ${Object.keys(subAny)}`);
+        // Return the FULL JSON in the error so the user can send it to us
+        return { error: `Structure Mismatch. keys=[${Object.keys(subAny).join(',')}]. FULL_DATA: ${subDebug}` };
     }
 
     // 4. Update Database
