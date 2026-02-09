@@ -46,7 +46,6 @@ export async function syncSubscriptionStatus() {
 
     // 3. Identify Plan ID or Fallback
     const subAny = activeSub as any;
-    const subAny = activeSub as any;
     // Check all possible casing variations from Square SDK/API
     let planId = subAny.planId || subAny.plan_id || subAny.planVariationId || subAny.plan_variation_id; 
     let foundPlan = null;
