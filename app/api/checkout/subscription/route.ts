@@ -137,7 +137,7 @@ export async function GET(request: NextRequest) {
         lineItems: lineItems // Use the dynamically constructed line items
       },
       checkoutOptions: {
-        redirectUrl: `${request.nextUrl.origin}/dashboard`, // Redirect back to dashboard
+        redirectUrl: `${request.nextUrl.origin}/dashboard?subscriptionSuccess=true`, // Redirect back to dashboard with success flag
         askForShippingAddress: false,
       }
     };

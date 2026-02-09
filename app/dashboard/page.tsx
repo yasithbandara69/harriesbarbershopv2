@@ -5,6 +5,7 @@ import styles from "./dashboard.module.css";
 import Link from "next/link";
 import { Suspense } from "react";
 import SubscriptionSuccess from "../components/SubscriptionSuccess";
+import SyncSubscriptionButton from "../components/SyncSubscriptionButton";
 
 export default async function DashboardPage() {
     const supabase = await createClient();
@@ -113,6 +114,15 @@ export default async function DashboardPage() {
                             <Link href="/dashboard/book" className={styles.logoutBtn} style={{ background: 'var(--primary-gold)', color: '#000', display: 'inline-block', textDecoration: 'none' }}>
                                 Book with Credits
                             </Link>
+                        </div>
+                    )}
+
+                    {!subscription && square_customer_id && (
+                        <div style={{ marginTop: '2rem', padding: '1.5rem', border: '1px dashed #444', borderRadius: '8px' }}>
+                             <p style={{ marginBottom: '1rem', fontSize: '0.9rem', color: '#888' }}>
+                                Recently subscribed but don't see it here?
+                             </p>
+                             <SyncSubscriptionButton />
                         </div>
                     )}
 
