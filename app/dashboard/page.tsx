@@ -7,6 +7,8 @@ import { Suspense } from "react";
 import SubscriptionSuccess from "../components/SubscriptionSuccess";
 import SyncSubscriptionButton from "../components/SyncSubscriptionButton";
 
+import { SUBSCRIPTION_DATA } from "../components/subscription-data";
+
 export default async function DashboardPage() {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -32,6 +34,13 @@ export default async function DashboardPage() {
     
     // Fallback to metadata if profile doesn't exist yet (e.g. legacy user or trigger failure)
     const { first_name, last_name, phone, role, square_customer_id } = profile || user.user_metadata || {};
+
+    // Derive Plan Details if subscription exists
+    let planDetails = null;
+    if (subscription && subscription.plan_id) {
+        const allPlans = SUBSCRIPTION_DATA.flatMap(cat => cat.plans.map(p => ({ ...p, categoryLabel: cat.label })));
+        planDetails = allPlans.find(p => p.squarePlanId === subscription.plan_id);
+    }
 
     return (
         <main className={styles.main}>
@@ -109,9 +118,35 @@ export default async function DashboardPage() {
 
                     {subscription && subscription.credits > 0 && (
                         <div style={{ marginTop: '2rem', padding: '1.5rem', background: 'rgba(212, 175, 55, 0.1)', border: '1px solid var(--primary-gold)', borderRadius: '8px' }}>
-                            <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem', color: 'var(--primary-gold)' }}>Member Booking</h3>
-                            <p style={{ marginBottom: '1rem', fontSize: '0.9rem' }}>You have {subscription.credits} credits available for this month.</p>
-                            <Link href="/dashboard/book" className={styles.logoutBtn} style={{ background: 'var(--primary-gold)', color: '#000', display: 'inline-block', textDecoration: 'none' }}>
+                            <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem', color: 'var(--primary-gold)' }}>Member Booking</h3>
+                            
+                            <div style={{ marginBottom: '1.5rem', fontSize: '0.95rem' }}>
+                                {planDetails && (
+                                    <div style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: 'space-between' }}>
+                                        <span style={{ color: '#aaa' }}>Plan:</span>
+                                        <span style={{ fontWeight: 'bold' }}>{planDetails.tier} - {planDetails.categoryLabel}</span>
+                                    </div>
+                                )}
+                                
+                                <div style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: 'space-between' }}>
+                                    <span style={{ color: '#aaa' }}>Status:</span>
+                                    <span style={{ color: '#4caf50', fontWeight: 'bold', textTransform: 'uppercase' }}>{subscription.status}</span>
+                                </div>
+
+                                <div style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: 'space-between' }}>
+                                    <span style={{ color: '#aaa' }}>Credits:</span>
+                                    <span>{subscription.credits} remaining</span>
+                                </div>
+
+                                {subscription.current_period_end && (
+                                    <div style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: 'space-between' }}>
+                                        <span style={{ color: '#aaa' }}>Next Billing:</span>
+                                        <span>{new Date(subscription.current_period_end).toLocaleDateString()}</span>
+                                    </div>
+                                )}
+                            </div>
+
+                            <Link href="/dashboard/book" className={styles.logoutBtn} style={{ background: 'var(--primary-gold)', color: '#000', display: 'inline-block', textDecoration: 'none', textAlign: 'center', width: '100%' }}>
                                 Book with Credits
                             </Link>
                         </div>
