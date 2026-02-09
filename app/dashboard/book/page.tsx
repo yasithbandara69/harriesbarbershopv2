@@ -2,62 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { listTeamMembers, listServices, searchAvailability, getServiceById } from '@/app/actions';
+import { syncSubscriptionStatus } from '@/app/actions/subscription';
 import { createMemberBooking } from './actions';
-import { createClient } from '@/utils/supabase/client';
-import { SUBSCRIPTION_DATA } from '@/app/components/subscription-data';
-import styles from '@/app/book/book.module.css';
-import Calendar from '@/app/book/Calendar';
-import Link from 'next/link';
+// ... imports ...
 
-const Icons = {
-    ArrowLeft: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>,
-};
-
-export default function MemberBookingPage() {
-  const [loading, setLoading] = useState(true);
-  const [step, setStep] = useState(1);
-  const [error, setError] = useState('');
-  
-  // Member Context
-  const [memberPlan, setMemberPlan] = useState<any>(null);
-  const [serviceDetails, setServiceDetails] = useState<any>(null);
-
-  // Data
-  const [availabilities, setAvailabilities] = useState<any[]>([]);
-
-  // Selection
-  const [selectedBarber, setSelectedBarber] = useState<any>(null); // We will set this to Harry
-  const [selectedDate, setSelectedDate] = useState<string>('');
-  const [selectedTime, setSelectedTime] = useState<string>('');
-  const [selectedSlot, setSelectedSlot] = useState<any>(null); // Contains the teamMemberId for the slot
-  const [notes, setNotes] = useState('');
-  
-  // User Info
-  const [userInfo, setUserInfo] = useState<any>(null);
-
-  useEffect(() => {
-    async function init() {
-        const supabase = createClient();
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-            window.location.href = '/login';
-            return;
-        }
-
-        // Fetch Subscription
-        const { data: sub } = await supabase
-            .from('user_subscriptions')
-            .select('*')
-            .eq('user_id', user.id)
-            .eq('status', 'ACTIVE')
-            .single();
-
-        if (!sub || sub.credits < 1) {
-            setError("You do not have any active booking credits.");
-            setLoading(false);
-            return;
-        }
-
+// ... inside component ...
         // Find Plan Config
         let foundPlan = null;
         for (const cat of SUBSCRIPTION_DATA) {
@@ -68,10 +17,22 @@ export default function MemberBookingPage() {
             }
         }
 
-        if (!foundPlan || !foundPlan.serviceId) {
-            setError("Could not identify your membership service. Please contact support.");
-            setLoading(false);
-            return;
+        // AUTO-HEAL: If plan is unknown or is the fallback, force a sync
+        if (!foundPlan || sub.plan_id === 'unknown-plan-fallback') {
+            console.log("Plan unknown or fallback detected. Attempting auto-heal sync...");
+            setLoading(true);
+            // We can show a verified message if we want, but let's just do it
+            const res = await syncSubscriptionStatus();
+            if (res.success) {
+                 console.log("Auto-heal sync successful. Reloading...");
+                 window.location.reload(); 
+                 return;
+            } else {
+                 console.error("Auto-heal failed:", res.error);
+                 setError("Could not match your subscription plan. Please contact support.");
+                 setLoading(false);
+                 return;
+            }
         }
 
         setMemberPlan(foundPlan);
