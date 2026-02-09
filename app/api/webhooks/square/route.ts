@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const eventType = body.type;
-    console.log(`Received Square Webhook: ${eventType}`);
+    // console.log(`Received Square Webhook: ${eventType}`);
 
     if (eventType === "invoice.payment_made") {
       const invoice = body.data.object.payment; // Note: structure varies, check docs. Actually invoice.payment_made object is an Invoice.
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
         const subscriptionId = invoice?.subscription_id;
 
         if (subscriptionId) {
-            console.log(`Processing subscription payment for: ${subscriptionId}`);
+            // console.log(`Processing subscription payment for: ${subscriptionId}`);
             await handleSubscriptionPayment(subscriptionId);
         }
     }
@@ -50,9 +50,11 @@ async function handleSubscriptionPayment(subscriptionId: string) {
     const supabase = await createClient();
     
     // 1. Fetch Subscription from Square to get Plan ID and Customer ID
+    // @ts-ignore
     const response = await squareClient.subscriptions.get({ subscriptionId });
     const result = response as any;
-    const subscription = result.subscription;
+    // Handle Fern SDK { data: { subscription: ... } } vs others
+    const subscription = result.data?.subscription || result.subscription || result.result?.subscription;
     
     if (!subscription) {
         console.error("Subscription not found in Square");
@@ -106,6 +108,6 @@ async function handleSubscriptionPayment(subscriptionId: string) {
     if (error) {
         console.error("Error updating user_subscriptions:", error);
     } else {
-        console.log(`Updated subscription for user ${profile.id}: ${credits} credits.`);
+        // console.log(`Updated subscription for user ${profile.id}: ${credits} credits.`);
     }
 }

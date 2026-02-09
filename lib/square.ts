@@ -1,10 +1,19 @@
-import { SquareClient, SquareEnvironment } from "square";
+// @ts-ignore
+const { SquareClient } = require("square");
+
+const Client = SquareClient;
+
+// Ensure Environment is available or default to strings
+const Environment = {
+  Production: "https://connect.squareup.com",
+  Sandbox: "https://connect.squareupsandbox.com"
+};
 
 const isProduction = process.env.SQUARE_ENVIRONMENT === "production";
 
-export const squareClient = new SquareClient({
-  token: process.env.SQUARE_ACCESS_TOKEN,
-  environment: isProduction ? SquareEnvironment.Production : SquareEnvironment.Sandbox,
+export const squareClient = new Client({
+  token: process.env.SQUARE_ACCESS_TOKEN, // Note: SquareClient uses 'token', not 'accessToken' in some versions, check d.ts or runtime
+  environment: isProduction ? Environment.Production : Environment.Sandbox,
 });
 
 export const locationId = process.env.SQUARE_LOCATION_ID;

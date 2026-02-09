@@ -35,7 +35,7 @@ export const SUBSCRIPTION_DATA: ServiceCategory[] = [
         squarePlanId: 'LBZTK3K4MEBVIIWAVSURO2SK',
         squarePlanVariationId: 'KBSCWFLBQ4XFOKLB3SI5HNWY',
         itemVariationId: '476R3Q6R3TFKNNPQ2DYQ47KE', // Gold haircut subscription - $100
-        serviceId: '7XYLQAAOUOKQF3BXTWFHDPWB',
+        serviceId: 'IG3KC7ZQIDZFPETUY3UWRPTU',
         tier: 'Gold',
         price: 100,
         billingCycle: 'per month',
@@ -53,7 +53,7 @@ export const SUBSCRIPTION_DATA: ServiceCategory[] = [
         squarePlanId: 'TSHE4PYA5732HHUE3YG3FQJR',
         squarePlanVariationId: 'PUHE4GTFY5J2BMLX3JFTP27Y',
         itemVariationId: 'DFLWJUF5ECY32UDE7CBU6DQN', // Platinum Haircut Subscription - $180
-        serviceId: '7XYLQAAOUOKQF3BXTWFHDPWB',
+        serviceId: 'IG3KC7ZQIDZFPETUY3UWRPTU',
         tier: 'Platinum',
         price: 180,
         billingCycle: 'per month',
@@ -79,7 +79,7 @@ export const SUBSCRIPTION_DATA: ServiceCategory[] = [
         squarePlanId: 'LW5ZSQKJQ2TQ6GH3ZDRU',
         squarePlanVariationId: 'NBFQJPSPRQMVTBHPC3LX6QCD',
         itemVariationId: 'UTYAA22JQROPKLS4KZ4TSQZI', // Gold Membership Haircut + Beard - Billing
-        serviceId: 'MAZ7Q6RYNFFWIIYV4CCHZKE4',
+        serviceId: '6ZJHSA7CEIIK2MAYR4OBTNUW',
         tier: 'Gold',
         price: 130,
         billingCycle: 'per month',
@@ -97,7 +97,7 @@ export const SUBSCRIPTION_DATA: ServiceCategory[] = [
         squarePlanId: 'QALKFCB6FL5TSTCCKWE6VU57',
         squarePlanVariationId: 'HATGGV4XB53Q6MXZHGO3ACJ5',
         itemVariationId: '2ALT23O67AI77UJ5LXYYTL4I', // Platinum Haircut + Beard Subscription - $240
-        serviceId: 'MAZ7Q6RYNFFWIIYV4CCHZKE4',
+        serviceId: '6ZJHSA7CEIIK2MAYR4OBTNUW',
         tier: 'Platinum',
         price: 240,
         billingCycle: 'per month',

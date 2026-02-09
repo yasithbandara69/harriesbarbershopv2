@@ -114,8 +114,14 @@ export async function createMemberBooking(
             idempotencyKey: randomUUID()
         };
 
+        // @ts-ignore
         const response = await squareClient.bookings.create(bookingReq);
-        const booking = serializeBigInt(response.booking);
+        const bResult = response as any;
+        const booking = bResult.data?.booking || bResult.booking || bResult.result?.booking;
+
+        if (!booking) {
+             throw new Error("Booking created but no booking object returned from Square.");
+        }
         
         return { success: true, booking };
 

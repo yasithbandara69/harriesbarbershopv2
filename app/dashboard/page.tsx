@@ -1,3 +1,4 @@
+import { listTeamMembers, listServices, searchAvailability, getServiceById, listCustomerBookings } from "@/app/actions";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import { logout } from "@/app/auth/actions";
@@ -6,8 +7,31 @@ import Link from "next/link";
 import { Suspense } from "react";
 import SubscriptionSuccess from "../components/SubscriptionSuccess";
 import SyncSubscriptionButton from "../components/SyncSubscriptionButton";
-
 import { SUBSCRIPTION_DATA } from "../components/subscription-data";
+
+const formatStatus = (status: string) => {
+    const map: Record<string, string> = {
+        'ACCEPTED': 'Confirmed',
+        'PENDING': 'Pending',
+        'CANCELLED_BY_SELLER': 'Cancelled (Shop)',
+        'CANCELLED_BY_CUSTOMER': 'Cancelled (You)',
+        'DECLINED': 'Declined',
+        'NOSHOW': 'No Show'
+    };
+    return map[status] || status.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
+};
+
+const getStatusColor = (status: string) => {
+    switch (status) {
+        case 'ACCEPTED': return '#4caf50'; // Green
+        case 'PENDING': return '#ff9800'; // Orange
+        case 'CANCELLED_BY_SELLER':
+        case 'CANCELLED_BY_CUSTOMER':
+        case 'DECLINED':
+            return '#f44336'; // Red
+        default: return '#aaa'; // Grey
+    }
+};
 
 export default async function DashboardPage() {
     const supabase = await createClient();
@@ -42,8 +66,26 @@ export default async function DashboardPage() {
         planDetails = allPlans.find(p => p.squarePlanId === subscription.plan_id);
     }
 
+    // FETCH APPOINTMENTS
+    let upcomingBookings = [];
+    let pastBookings = [];
+    
+    if (square_customer_id) {
+        try {
+            // @ts-ignore
+            const bookings = await listCustomerBookings(square_customer_id);
+            const now = new Date();
+            
+            upcomingBookings = bookings.filter((b: any) => new Date(b.startAt) >= now);
+            pastBookings = bookings.filter((b: any) => new Date(b.startAt) < now);
+        } catch (e) {
+            console.error("Failed to load bookings:", e);
+        }
+    }
+
     return (
         <main className={styles.main}>
+            {/* ... (Header remains same) ... */}
             <header className={styles.header}>
                 <h1 className={styles.title}>My Account</h1>
                 <form action={logout}>
@@ -58,7 +100,7 @@ export default async function DashboardPage() {
             </Suspense>
 
             <div className={styles.grid}>
-                {/* Profile Section */}
+                {/* Profile Section (remains same) */}
                 <div className={`${styles.card} ${styles.profileCard}`}>
                     <h2 className={styles.welcome}>Welcome, {first_name || 'Guest'}</h2>
                     
@@ -103,18 +145,43 @@ export default async function DashboardPage() {
                 <div className={styles.card}>
                     <h3 className={styles.sectionTitle}>Upcoming Appointments</h3>
                     
-                    {/* Placeholder for bookings */}
-                    <div className={styles.emptyState}>
-                        <p>You have no upcoming appointments.</p>
-                        <Link href="/book" style={{ 
-                            display: 'inline-block', 
-                            marginTop: '1rem', 
-                            color: 'var(--primary-gold)', 
-                            textDecoration: 'underline' 
-                        }}>
-                            Book a haircut now
-                        </Link>
-                    </div>
+                    {upcomingBookings.length > 0 ? (
+                        <div className={styles.bookingsList}>
+                            {upcomingBookings.map((booking: any) => (
+                                <div key={booking.id} style={{ 
+                                    padding: '1rem', 
+                                    border: '1px solid #333', 
+                                    borderRadius: '8px', 
+                                    marginBottom: '1rem',
+                                    background: '#1a1a1a'
+                                }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                                        <span style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
+                                            {new Date(booking.startAt).toLocaleDateString()}
+                                        </span>
+                                        <span style={{ color: 'var(--primary-gold)' }}>
+                                            {new Date(booking.startAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                        </span>
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: '#aaa' }}>
+                                        <span>Status: <span style={{ color: getStatusColor(booking.status), fontWeight: 'bold' }}>{formatStatus(booking.status)}</span></span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className={styles.emptyState}>
+                            <p>You have no upcoming appointments.</p>
+                            <Link href="/book" style={{ 
+                                display: 'inline-block', 
+                                marginTop: '1rem', 
+                                color: 'var(--primary-gold)', 
+                                textDecoration: 'underline' 
+                            }}>
+                                Book a haircut now
+                            </Link>
+                        </div>
+                    )}
 
                     {subscription && subscription.credits > 0 && (
                         <div style={{ marginTop: '2rem', padding: '1.5rem', background: 'rgba(212, 175, 55, 0.1)', border: '1px solid var(--primary-gold)', borderRadius: '8px' }}>
@@ -162,9 +229,24 @@ export default async function DashboardPage() {
                     )}
 
                     <h3 className={styles.sectionTitle} style={{marginTop: '2rem'}}>Booking History</h3>
-                     <div className={styles.emptyState}>
-                        <p>No past appointments found.</p>
-                    </div>
+                     {pastBookings.length > 0 ? (
+                        <div className={styles.bookingsList}>
+                            {pastBookings.map((booking: any) => (
+                                <div key={booking.id} style={{ 
+                                    padding: '0.75rem', 
+                                    borderBottom: '1px solid #333', 
+                                    fontSize: '0.9rem',
+                                    color: '#888'
+                                }}>
+                                    <span>{new Date(booking.startAt).toLocaleDateString()}</span> - <span style={{ color: getStatusColor(booking.status) }}>{formatStatus(booking.status)}</span>
+                                </div>
+                            ))}
+                        </div>
+                     ) : (
+                        <div className={styles.emptyState}>
+                            <p>No past appointments found.</p>
+                        </div>
+                     )}
                 </div>
             </div>
         </main>

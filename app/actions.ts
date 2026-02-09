@@ -37,6 +37,11 @@ export async function listServices(teamMemberId?: string) {
     const result = response as any;
     const items = result.items || [];
     
+    const HIDDEN_SERVICE_IDS = [
+        'IG3KC7ZQIDZFPETUY3UWRPTU', // Subscription Haircut
+        '6ZJHSA7CEIIK2MAYR4OBTNUW'  // Subscription Haircut + beard
+    ];
+
     const services = items.flatMap((item: any) => item.itemData?.variations?.map((variation: any) => {
         // Filter by Team Member if provided
         if (teamMemberId) {
@@ -44,6 +49,11 @@ export async function listServices(teamMemberId?: string) {
             if (assignedIds.length > 0 && !assignedIds.includes(teamMemberId)) {
                 return null;
             }
+        }
+        
+        // Filter out hidden subscription services
+        if (HIDDEN_SERVICE_IDS.includes(variation.id)) {
+            return null;
         }
 
         return {
@@ -236,12 +246,56 @@ export async function createBooking(
         };
 
         // Reverted to .create() based on working code
+        // Fern SDK returns { data: { booking: ... } }
+        // Node SDK returns { booking: ... }
+        // @ts-ignore
         const response = await squareClient.bookings.create(bookingReq);
         const bResult = response as any;
-        return serializeBigInt(bResult.booking);
+        const booking = bResult.data?.booking || bResult.booking || bResult.result?.booking;
+        
+        if (!booking) {
+            throw new Error("Booking created but no booking object returned.");
+        }
+
+        return serializeBigInt(booking);
 
     } catch (error: any) {
         console.error("Error creating booking:", error);
         throw new Error(error.errors ? JSON.stringify(error.errors) : error.message);
+    }
+}
+
+// NEW: List bookings for a specific customer
+export async function listCustomerBookings(customerId: string) {
+    if (!locationId) throw new Error("Location ID not set");
+
+    try {
+        // @ts-ignore
+        const response = await squareClient.bookings.list({
+             customerId,
+             // limit: 50, // optional
+        });
+
+        // Handle various response structures from different SDK versions/builds
+        const bookings = response.data?.bookings 
+                        // @ts-ignore
+                        || response.response?.bookings 
+                        // @ts-ignore
+                        || response.bookings 
+                        // @ts-ignore
+                        || response.result?.bookings 
+                        || [];
+
+        console.log(`Found ${bookings.length} bookings for user.`);
+        
+        return bookings.map((b: any) => ({
+            id: b.id,
+            status: b.status,
+            startAt: b.startAt,
+            serviceVariationId: b.appointmentSegments?.[0]?.serviceVariationId
+        }));
+    } catch (error) {
+        console.error("Error listing customer bookings:", error);
+        return [];
     }
 }
