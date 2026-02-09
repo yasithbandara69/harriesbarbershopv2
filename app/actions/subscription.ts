@@ -25,68 +25,67 @@ export async function syncSubscriptionStatus() {
   }
 
   try {
-    // 2. Search for Active Subscriptions in Square
-    const response = await squareClient.subscriptions.search({
-      query: {
-        filter: {
-          customerIds: [profile.square_customer_id]
+    // 2. Reverse Lookup: Since Square sometimes omits planId in the response,
+    // we iterate through our known plans and ask Square: "Does user have THIS plan?"
+    const allPlans = SUBSCRIPTION_DATA.flatMap(cat => cat.plans);
+    
+    let foundSubscription: any = null;
+    let foundPlanId: string | null = null;
+    let foundCredits = 0;
+
+    // parallel requests could be faster, but let's be sequential for safety/simplicity first
+    // or Promise.all if we want speed. There are only ~4 plans.
+    
+    const searchPromises = allPlans.map(async (plan) => {
+        try {
+            const response = await squareClient.subscriptions.search({
+                query: {
+                    filter: {
+                        customerIds: [profile.square_customer_id],
+                        planIds: [plan.squarePlanId] // Search specifically for this plan
+                    }
+                }
+            });
+            
+            const result = response as any;
+            const subs = result.subscriptions || result.body?.subscriptions || [];
+            const activeSub = subs.find((s: any) => s.status === 'ACTIVE');
+            
+            if (activeSub) {
+                return { sub: activeSub, plan };
+            }
+        } catch (e) {
+            console.error(`Error searching plan ${plan.squarePlanId}:`, e);
         }
-      }
+        return null;
     });
 
-    const result = response as any; // Type assertion for SDK response which varies
-    let subscriptions = result.subscriptions || result.body?.subscriptions || [];
-    
-    // Filter for ACTIVE status in memory since API filter might be strict
-    subscriptions = subscriptions.filter((s: any) => s.status === 'ACTIVE');
+    const results = await Promise.all(searchPromises);
+    const match = results.find(r => r !== null);
 
-    if (subscriptions.length === 0) {
-        // Double check CANCELED just in case? No, we only credit active ones.
-        return { message: "No active subscriptions found." };
+    if (match) {
+        foundSubscription = match.sub;
+        foundPlanId = match.plan.squarePlanId;
+        foundCredits = match.plan.credits;
     }
 
-    // 3. Process the most recent active subscription
-    // Assuming one active subscription per user for now
-    const sub = subscriptions[0]; // Logic could be improved to handle multiple
-
-    const subAny = sub as any;
-    const planId = subAny.planId || subAny.plan_id;
-
-    if (!planId) {
-         const subStr = JSON.stringify(subAny, (key, value) => 
-            typeof value === 'bigint' ? value.toString() : value
-         );
-         return { error: `Subscription found but Plan ID missing. Debug: ${subStr}` };
+    if (!foundSubscription || !foundPlanId) {
+        return { message: "No active subscriptions found for known plans." };
     }
-    
-    // Determine Credits
-    const allPlans = SUBSCRIPTION_DATA.flatMap(cat => cat.plans);
-    const planData = allPlans.find(p => p.squarePlanId === planId);
-    
-    const credits = planData ? planData.credits : 0;
 
-    // 4. Update Database
+    // 3. Update Database using the identified Plan ID
     const { error } = await supabase
         .from('user_subscriptions')
         .upsert({
             user_id: user.id,
-            square_subscription_id: sub.id,
-            plan_id: planId,
-            status: sub.status,
-            credits: credits, // This resets credits to plan max on sync? 
-            // Ideally we shouldn't reset credits if we are just syncing status, 
-            // unless it's a new period? 
-            // For now, simpler is better: if we find an active sub, ensure we have a record.
-            // But we should be careful not to overwrite used credits if we just refresh mid-cycle.
-            // Let's check if record exists?
-            current_period_start: sub.startDate,
-            current_period_end: sub.chargedThroughDate,
+            square_subscription_id: foundSubscription.id,
+            plan_id: foundPlanId,
+            status: foundSubscription.status,
+            credits: foundCredits,
+            current_period_start: foundSubscription.startDate,
+            current_period_end: foundSubscription.chargedThroughDate,
             updated_at: new Date().toISOString()
         }, { onConflict: 'user_id' }); 
-        // Note: upsert will overwrite credits. 
-        // If we want to preserve credits:
-        // We really only want to 'top up' if the period has changed.
-        // But for this "fix my missing subscription" use case, the record is missing entirely.
         
     if (error) {
         console.error("Supabase error:", error);
