@@ -67,8 +67,13 @@ export async function syncSubscriptionStatus() {
         // If we still can't find it, we can't safely assign credits.
         // The user explicitly asked to "not assume". 
         // So we return an error with the IDs we found so we can debug.
+        
+        // SAFE JSON STRINGIFY to handle BigInts
+        const replacer = (key: string, value: any) => typeof value === 'bigint' ? value.toString() : value;
+        const subDebug = JSON.stringify(subAny, replacer);
+        
         const debugInfo = `PlanId=${subAny.planId}, VarId=${subAny.plan_variation_id}, TplId=${subAny.orderTemplateId}`;
-        console.error(`Could not identify plan for subscription ${activeSub.id}. Data: ${JSON.stringify(subAny)}`);
+        console.error(`Could not identify plan for subscription ${activeSub.id}. Data: ${subDebug}`);
         return { error: `Subscription detected but Plan Config missing. ID: ${debugInfo}` };
     }
 
