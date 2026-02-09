@@ -46,7 +46,9 @@ export async function syncSubscriptionStatus() {
 
     // 3. Identify Plan ID or Fallback
     const subAny = activeSub as any;
-    let planId = subAny.planId || subAny.plan_id || subAny.plan_variation_id; 
+    const subAny = activeSub as any;
+    // Check all possible casing variations from Square SDK/API
+    let planId = subAny.planId || subAny.plan_id || subAny.planVariationId || subAny.plan_variation_id; 
     let foundPlan = null;
     
     const allPlans = SUBSCRIPTION_DATA.flatMap(cat => cat.plans);
@@ -65,16 +67,9 @@ export async function syncSubscriptionStatus() {
         planId = foundPlan.squarePlanId; // Normalize to our Plan ID
     } else {
         // If we still can't find it, we can't safely assign credits.
-        // The user explicitly asked to "not assume". 
-        // So we return an error with the IDs we found so we can debug.
-        
-        // SAFE JSON STRINGIFY to handle BigInts
-        const replacer = (key: string, value: any) => typeof value === 'bigint' ? value.toString() : value;
-        const subDebug = JSON.stringify(subAny, replacer, 2);
-        
-        console.error(`Could not identify plan for subscription ${activeSub.id}. keys: ${Object.keys(subAny)}`);
-        // Return the FULL JSON in the error so the user can send it to us
-        return { error: `Structure Mismatch. keys=[${Object.keys(subAny).join(',')}]. FULL_DATA: ${subDebug}` };
+        const subDebug = JSON.stringify(subAny, (key, value) => typeof value === 'bigint' ? value.toString() : value);
+        console.error(`Could not identify plan for subscription ${activeSub.id}. Data: ${subDebug}`);
+        return { error: "Subscription active but Plan not recognized. Contact support." };
     }
 
     // 4. Update Database
