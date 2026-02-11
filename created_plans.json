@@ -1,0 +1,17 @@
+[
+  {
+    "name": "Gold Membership Haircut (TESTING $1)",
+    "squarePlanId": "V7BNXTEEKLE6NX3T3A6DWT2N",
+    "itemVariationId": "VWXT7YBWGTU3ZS55UPOWF3BZ"
+  },
+  {
+    "name": "Platinum Membership Haircut (TESTING $1)",
+    "squarePlanId": "SFPSWC624HXPLC74XTMTTKAE",
+    "itemVariationId": "K2N5M24UCFRN2TWJJCCPYUWU"
+  },
+  {
+    "name": "Platinum Membership Haircut + Beard (TESTING $1)",
+    "squarePlanId": "DWOHUIGPOJHQZQNG3ZJKL7U5",
+    "itemVariationId": "VSZFN5PWDHPQDYNPKRDYYZMC"
+  }
+]

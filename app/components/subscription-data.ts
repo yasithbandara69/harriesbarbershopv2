@@ -32,12 +32,12 @@ export const SUBSCRIPTION_DATA: ServiceCategory[] = [
     plans: [
       {
         id: 'gold-cut',
-        squarePlanId: 'LBZTK3K4MEBVIIWAVSURO2SK',
-        squarePlanVariationId: 'KBSCWFLBQ4XFOKLB3SI5HNWY',
-        itemVariationId: '476R3Q6R3TFKNNPQ2DYQ47KE', // Gold haircut subscription - $100
+        squarePlanId: 'V7BNXTEEKLE6NX3T3A6DWT2N',
+        squarePlanVariationId: 'V7BNXTEEKLE6NX3T3A6DWT2N',
+        itemVariationId: 'VWXT7YBWGTU3ZS55UPOWF3BZ', // Gold Membership Haircut (TESTING $1)
         serviceId: 'IG3KC7ZQIDZFPETUY3UWRPTU',
         tier: 'Gold',
-        price: 100,
+        price: 1,
         billingCycle: 'per month',
         savings: 'Save 10%',
         credits: 2,
@@ -50,12 +50,12 @@ export const SUBSCRIPTION_DATA: ServiceCategory[] = [
       },
       {
         id: 'plat-cut',
-        squarePlanId: 'TSHE4PYA5732HHUE3YG3FQJR',
-        squarePlanVariationId: 'PUHE4GTFY5J2BMLX3JFTP27Y',
-        itemVariationId: 'DFLWJUF5ECY32UDE7CBU6DQN', // Platinum Haircut Subscription - $180
+        squarePlanId: 'SFPSWC624HXPLC74XTMTTKAE',
+        squarePlanVariationId: 'SFPSWC624HXPLC74XTMTTKAE',
+        itemVariationId: 'K2N5M24UCFRN2TWJJCCPYUWU', // Platinum Membership Haircut (TESTING $1)
         serviceId: 'IG3KC7ZQIDZFPETUY3UWRPTU',
         tier: 'Platinum',
-        price: 180,
+        price: 1,
         billingCycle: 'per month',
         savings: 'Save 20%',
         credits: 4,
@@ -94,12 +94,12 @@ export const SUBSCRIPTION_DATA: ServiceCategory[] = [
       },
       {
         id: 'plat-combo',
-        squarePlanId: 'QALKFCB6FL5TSTCCKWE6VU57',
-        squarePlanVariationId: 'HATGGV4XB53Q6MXZHGO3ACJ5',
-        itemVariationId: '2ALT23O67AI77UJ5LXYYTL4I', // Platinum Haircut + Beard Subscription - $240
+        squarePlanId: 'DWOHUIGPOJHQZQNG3ZJKL7U5',
+        squarePlanVariationId: 'DWOHUIGPOJHQZQNG3ZJKL7U5',
+        itemVariationId: 'VSZFN5PWDHPQDYNPKRDYYZMC', // Platinum Membership Haircut + Beard (TESTING $1)
         serviceId: '6ZJHSA7CEIIK2MAYR4OBTNUW',
         tier: 'Platinum',
-        price: 240,
+        price: 1,
         billingCycle: 'per month',
         savings: 'Save 15%',
         credits: 4,
