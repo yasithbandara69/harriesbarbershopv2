@@ -27,10 +27,49 @@ export async function GET(request: NextRequest) {
   }
 
   // Get Square Customer ID from metadata
-  const squareCustomerId = user.user_metadata?.square_customer_id;
+  // Get Square Customer ID from metadata
+  let squareCustomerId = user.user_metadata?.square_customer_id;
+
+  // Verify if the customer actually exists in Square
+  let customerIsValid = false;
+  if (squareCustomerId) {
+      try {
+          await squareClient.customers.retrieve(squareCustomerId);
+          customerIsValid = true;
+      } catch (e: any) {
+          console.warn(`[Checkout] Stored Square ID ${squareCustomerId} not found in Square. Creating new one.`);
+          // If 404 or other error, assume invalid and recreate
+          squareCustomerId = null; 
+      }
+  }
 
   if (!squareCustomerId) {
-     return NextResponse.json({ error: "No Square Customer ID found for user." }, { status: 400 });
+     console.log("[Checkout] No valid Square Customer ID. Creating new customer...");
+     try {
+         const { customer } = await squareClient.customers.create({
+             givenName: user.user_metadata?.first_name || user.email?.split('@')[0],
+             familyName: user.user_metadata?.last_name || "",
+             emailAddress: user.email,
+             phoneNumber: user.user_metadata?.phone,
+             referenceId: user.id
+         });
+         
+         if (customer?.id) {
+             squareCustomerId = customer.id;
+             // Update Supabase
+             await supabase.auth.updateUser({
+                 data: { square_customer_id: squareCustomerId }
+             });
+             console.log(`[Checkout] Created new Square Customer: ${squareCustomerId}`);
+         }
+     } catch (createError) {
+         console.error("[Checkout] Failed to create Square customer:", createError);
+         return NextResponse.json({ error: "Failed to create Square Customer account." }, { status: 500 });
+     }
+  }
+
+  if (!squareCustomerId) {
+     return NextResponse.json({ error: "No Square Customer ID found or created." }, { status: 500 });
   }
 
   // Lookup the plan in our internal data to find the corresponding Item Variation ID and Subscription Variation ID
@@ -133,7 +172,7 @@ export async function GET(request: NextRequest) {
       idempotencyKey: randomUUID(),
       order: {
         locationId: locationId!,
-        customerId: squareCustomerId, // Link to the logged-in user!
+        // customerId: squareCustomerId, // TEMPORARILY DISABLED: Testing if Customer Account is blocking payment
         lineItems: lineItems // Use the dynamically constructed line items
       },
       checkoutOptions: {
