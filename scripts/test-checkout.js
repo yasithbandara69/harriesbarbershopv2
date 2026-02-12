@@ -31,62 +31,46 @@ const client = new SquareClient({
 async function testCheckout() {
     console.log("Testing Checkout Link Generation...");
     
-    // IDs from my previous steps
-    const PLAN_ID = 'EJGEEVYKOZMCQHWCLZI7MA4Z';
-    const ITEM_VAR_ID = 'MN74NI7HDAD56CGSQHATYX75';
+    // IDs
+    const PLAN_VAR_ID = 'CAL3SGZYVTDQJFR6NY5R72OD'; // Gold Variation
+    const ITEM_VAR_ID = 'MN74NI7HDAD56CGSQHATYX75'; // Gold Item Variation (Price $1.00)
     const LOCATION_ID = process.env.SQUARE_LOCATION_ID;
 
     try {
-        // ATTEMPT 1: purely subscription_plan_id (No line items?)
-        // Square docs say we might need at least one line item or none if subscription_plan_id is present? 
-        // Let's try sending subscription_plan_id WITHOUT the explicit item first (or maybe with it?)
+        console.log("\n--- Generating Valid Checkout Link ---");
+        const body = {
+            idempotencyKey: randomUUID(),
+            order: {
+                locationId: LOCATION_ID,
+                customerId: '5T7B774ARCWZG9C94G5J3WXAQ8', // Testing with specific customer
+                lineItems: [
+                    {
+                        catalogObjectId: ITEM_VAR_ID,
+                        quantity: "1"
+                    }
+                ]
+            },
+            checkoutOptions: {
+                subscriptionPlanId: PLAN_VAR_ID,
+                redirectUrl: "https://harriesbarbershopv2.vercel.app/dashboard" // Use real domain
+            }
+        };
         
-        console.log("\n--- Attempt 1: subscription_plan_id ONLY (No manual line items) ---");
         try {
-            const body = {
-                idempotencyKey: randomUUID(),
-                order: {
-                    locationId: LOCATION_ID,
-                    // If I omit lineItems, will it work?
-                    // "Line items are required for an order." - typically.
-                    // But maybe passing subscription_plan_id auto-generates them?
-                },
-                checkoutOptions: {
-                    subscriptionPlanId: PLAN_ID,
-                    redirectUrl: "https://example.com/success"
-                }
-            };
-            const { result } = await client.checkout.paymentLinks.create(body);
-             console.log("✅ Success!", result.paymentLink.url);
-        } catch (e) {
-            console.log("❌ Failed:", e.errors || e.body || e);
-        }
+            const response = await client.checkout.paymentLinks.create(body);
+             console.log("✅ Success! Raw Response:");
+             // Handle BigInt in checking response
+             console.log(JSON.stringify(response, (key, value) => 
+                typeof value === 'bigint' ? value.toString() : value
+            , 2));
 
-        console.log("\n--- Attempt 2: subscription_plan_id + Line Item ---");
-        try {
-             // This corresponds to what we likely did when we got the "Incorrect Object Type" error?
-             // actually, previously we sent `itemBased` order but with `subscriptionPlanId` set? 
-             
-            const body = {
-                idempotencyKey: randomUUID(),
-                order: {
-                    locationId: LOCATION_ID,
-                    lineItems: [
-                        {
-                            catalogObjectId: ITEM_VAR_ID,
-                            quantity: "1"
-                        }
-                    ]
-                },
-                checkoutOptions: {
-                    subscriptionPlanId: PLAN_ID,
-                    redirectUrl: "https://example.com/success"
-                }
-            };
-            const { result } = await client.checkout.paymentLinks.create(body);
-             console.log("✅ Success!", result.paymentLink.url);
+            const result = response.result || response;
+             if (result.paymentLink) {
+                 console.log("URL:", result.paymentLink.url);
+             }
         } catch (e) {
-            console.log("❌ Failed:", JSON.stringify(e.errors || e.body || e, null, 2));
+            console.log("❌ Failed:", e);
+             if (e.result) console.log(JSON.stringify(e.result, null, 2));
         }
 
     } catch (error) {

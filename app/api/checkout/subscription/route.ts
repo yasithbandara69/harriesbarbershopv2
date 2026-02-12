@@ -156,6 +156,22 @@ export async function GET(request: NextRequest) {
         body.checkoutOptions.subscriptionPlanId = subscriptionPlanVariationId;
     }
 
+    console.log("[Checkout] Creating Payment Link with Body:", JSON.stringify(body, (key, value) => 
+        typeof value === 'bigint' ? value.toString() : value
+    , 2));
+
+    try {
+        const fs = require('fs');
+        const path = require('path');
+        const logPath = path.resolve(process.cwd(), 'checkout-debug.json');
+        fs.appendFileSync(logPath, JSON.stringify({
+            timestamp: new Date().toISOString(),
+            body: body
+        }, (key, value) => typeof value === 'bigint' ? value.toString() : value, 2) + ",\n");
+    } catch (e) {
+        console.error("Failed to write log file", e);
+    }
+
     const { paymentLink } = await squareClient.checkout.paymentLinks.create(body);
 
     if (paymentLink?.url) {
