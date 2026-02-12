@@ -42,7 +42,7 @@ async function testCheckout() {
             idempotencyKey: randomUUID(),
             order: {
                 locationId: LOCATION_ID,
-                customerId: '5T7B774ARCWZG9C94G5J3WXAQ8', // Testing with specific customer
+                customerId: 'M7QYWFQ8891PNVMMQ5E1M2ZPQ8', // Testing with INVALID customer
                 lineItems: [
                     {
                         catalogObjectId: ITEM_VAR_ID,
@@ -52,7 +52,16 @@ async function testCheckout() {
             },
             checkoutOptions: {
                 subscriptionPlanId: PLAN_VAR_ID,
-                redirectUrl: "https://harriesbarbershopv2.vercel.app/dashboard" // Use real domain
+                redirectUrl: "https://harriesbarbershopv2.vercel.app/dashboard",
+                askForShippingAddress: false
+            },
+            prePopulatedData: {
+                buyerEmail: "travelwithmeslk@gmail.com",
+                buyerPhoneNumber: "+61480089451",
+                buyerAddress: {
+                  firstName: "kovinda",
+                  lastName: "bandara"
+                }
             }
         };
         

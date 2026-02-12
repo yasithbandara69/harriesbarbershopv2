@@ -156,21 +156,7 @@ export async function GET(request: NextRequest) {
         body.checkoutOptions.subscriptionPlanId = subscriptionPlanVariationId;
     }
 
-    console.log("[Checkout] Creating Payment Link with Body:", JSON.stringify(body, (key, value) => 
-        typeof value === 'bigint' ? value.toString() : value
-    , 2));
-
-    try {
-        const fs = require('fs');
-        const path = require('path');
-        const logPath = path.resolve(process.cwd(), 'checkout-debug.json');
-        fs.appendFileSync(logPath, JSON.stringify({
-            timestamp: new Date().toISOString(),
-            body: body
-        }, (key, value) => typeof value === 'bigint' ? value.toString() : value, 2) + ",\n");
-    } catch (e) {
-        console.error("Failed to write log file", e);
-    }
+    console.log("[Checkout] prePopulatedData:", JSON.stringify(body.prePopulatedData, null, 2));
 
     const { paymentLink } = await squareClient.checkout.paymentLinks.create(body);
 
@@ -182,15 +168,34 @@ export async function GET(request: NextRequest) {
 
   } catch (error: any) {
     console.error("Square Checkout Error:", error);
-    if (error.result) console.error("Result:", JSON.stringify(error.result, (key, value) =>
-        typeof value === 'bigint' ? value.toString() : value // Handle BigInt
-    , 2));
-    if (error.errors) console.error("Errors:", JSON.stringify(error.errors, null, 2));
+    
+    // Log helpful properties explicitly
+    if (error instanceof Error) {
+        console.error("Error Message:", error.message);
+        console.error("Error Stack:", error.stack);
+    }
+    
+    // Square SDK errors often hide details in .result, .body, or .errors
+    try {
+        if (error.result) {
+            console.error("Square Result:", JSON.stringify(error.result, (key, value) =>
+                typeof value === 'bigint' ? value.toString() : value
+            , 2));
+        }
+        if (error.errors) {
+             console.error("Square Errors:", JSON.stringify(error.errors, null, 2));
+        }
+        if (error.body) {
+             console.error("Square Body:", JSON.stringify(error.body, null, 2));
+        }
+    } catch (logError) {
+        console.error("Failed to log error details:", logError);
+    }
     
     return NextResponse.json(
         { 
-            error: error.message || "An error occurred creating the checkout link",
-            details: error.errors || error.result 
+            error: "An error occurred creating the checkout link",
+            details: error.message || String(error)
         }, 
         { status: 500 }
     );
