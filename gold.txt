@@ -1,0 +1,9 @@
+Creating plan: Gold Membership Haircut for $100 AUD...
+??? Subscription Plan Created: EJGEEVYKOZMCQHWCLZI7MA4Z
+??? Item Variation Created: MN74NI7HDAD56CGSQHATYX75
+-----------------------------------
+???? UPDATE THIS IN app/components/subscription-data.ts ????
+squarePlanId: 'EJGEEVYKOZMCQHWCLZI7MA4Z',
+squarePlanVariationId: 'EJGEEVYKOZMCQHWCLZI7MA4Z',
+itemVariationId: 'MN74NI7HDAD56CGSQHATYX75',
+-----------------------------------

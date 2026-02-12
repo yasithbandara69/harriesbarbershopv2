@@ -26,38 +26,31 @@ const client = new SquareClient({
   environment: isProduction ? "https://connect.squareup.com" : "https://connect.squareupsandbox.com",
 });
 
-async function inspectLegacyPlan() {
-    const LEGACY_ALAN_ID = "VWXT7YBWGTU3ZS55UPOWF3BZ"; // Gold Membership Haircut (Testing) Item Variation ID
+async function inspectGoldPlan() {
+    const PLAN_ID = "EJGEEVYKOZMCQHWCLZI7MA4Z";
 
     try {
-        console.log(`Inspecting Legacy Plan: ${LEGACY_ALAN_ID} (via Catalog.get)...`);
+        console.log(`Inspecting Gold Plan: ${PLAN_ID}...`);
         
         let response = await client.catalog.object.get({
-            objectId: LEGACY_ALAN_ID,
-            includeRelatedObjects: true // Get the parent item and maybe subscription settings?
+            objectId: PLAN_ID,
+            includeRelatedObjects: true
         });
 
         const result = response.result || response;
         if (result.object) {
-            console.log("\n--- LEGACY ITEM OBJECT ---");
+            console.log("\n--- GOLD PLAN OBJECT ---");
             console.log(JSON.stringify(result.object, (key, value) =>
                 typeof value === 'bigint' ? value.toString() : value
             , 2));
-            
-            if (result.relatedObjects) {
-                console.log("\n--- RELATED OBJECTS ---");
-                result.relatedObjects.forEach(obj => {
-                    console.log(`Type: ${obj.type}, ID: ${obj.id}, Name: ${obj.subscriptionPlanData?.name || obj.itemData?.name}`);
-                });
-            }
             return;
         }
 
-        console.log("Legacy Item NOT FOUND.");
+        console.log("Gold Plan NOT FOUND.");
         
     } catch (error) {
-        console.error("Error inspecting legacy plan:", error);
+        console.error("Error inspecting gold plan:", error);
     }
 }
 
-inspectLegacyPlan();
+inspectGoldPlan();

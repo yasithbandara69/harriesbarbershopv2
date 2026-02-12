@@ -32,12 +32,12 @@ export const SUBSCRIPTION_DATA: ServiceCategory[] = [
     plans: [
       {
         id: 'gold-cut',
-        squarePlanId: 'V7BNXTEEKLE6NX3T3A6DWT2N',
-        squarePlanVariationId: 'V7BNXTEEKLE6NX3T3A6DWT2N',
-        itemVariationId: 'VWXT7YBWGTU3ZS55UPOWF3BZ', // Gold Membership Haircut (TESTING $1)
+        squarePlanId: 'EJGEEVYKOZMCQHWCLZI7MA4Z',
+        // squarePlanVariationId: 'EJGEEVYKOZMCQHWCLZI7MA4Z', // Removed to force Item-based checkout
+        itemVariationId: 'MN74NI7HDAD56CGSQHATYX75', // Gold Membership Haircut ($100)
         serviceId: 'IG3KC7ZQIDZFPETUY3UWRPTU',
         tier: 'Gold',
-        price: 1,
+        price: 100,
         billingCycle: 'per month',
         savings: 'Save 10%',
         credits: 2,

@@ -1,0 +1,15 @@
+Inspecting Gold Plan: EJGEEVYKOZMCQHWCLZI7MA4Z...
+
+--- GOLD PLAN OBJECT ---
+{
+  "type": "SUBSCRIPTION_PLAN",
+  "created_at": "2026-02-12T15:34:22.254Z",
+  "subscriptionPlanData": {
+    "name": "Gold Membership Haircut"
+  },
+  "id": "EJGEEVYKOZMCQHWCLZI7MA4Z",
+  "updatedAt": "2026-02-12T15:34:22.254Z",
+  "version": "1770910462254",
+  "isDeleted": false,
+  "presentAtAllLocations": true
+}
