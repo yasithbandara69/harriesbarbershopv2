@@ -35,7 +35,7 @@ export const SUBSCRIPTION_DATA: ServiceCategory[] = [
         squarePlanId: 'EN3KSUE7CWSLGN62HSC2OKOU', // Working Legacy Plan ($1)
         squarePlanVariationId: 'YX4DI7J4L2G2XEPM5IINNTMS',
         itemVariationId: 'MN74NI7HDAD56CGSQHATYX75',
-        serviceId: 'IG3KC7ZQIDZFPETUY3UWRPTU',
+        serviceId: '5NSMYVMEE3XCXQ6TB5AYN2RM', // Updated Subscription Haircut Service ID
         tier: 'Gold',
         price: 1, // Keep as $1 test for now
         billingCycle: 'per month',
@@ -53,7 +53,7 @@ export const SUBSCRIPTION_DATA: ServiceCategory[] = [
         squarePlanId: 'K52VUMY7IX4MVVQ3LEG6EWI2', // New Forever Plan (Fixed Price)
         squarePlanVariationId: 'ACN565PXFAYNQIFZTZVI4WBJ',
         itemVariationId: 'J2UQ3PMSLG3XU7Y4XYZ2EXWF',
-        serviceId: 'IG3KC7ZQIDZFPETUY3UWRPTU',
+        serviceId: '5NSMYVMEE3XCXQ6TB5AYN2RM', // Updated Subscription Haircut Service ID
         tier: 'Platinum',
         price: 180,
         billingCycle: 'per month',
@@ -79,7 +79,7 @@ export const SUBSCRIPTION_DATA: ServiceCategory[] = [
         squarePlanId: 'USRP54Q7NJFMR2PQ5MU43PM6', // New Forever Plan (Fixed Price)
         squarePlanVariationId: 'RT5YC76UK6CMGWJX3ROWZBHT',
         itemVariationId: 'MNIB2VOXZDWE27IUDYNU6OXC',
-        serviceId: '6ZJHSA7CEIIK2MAYR4OBTNUW',
+        serviceId: 'SMVJNPINNCCMWRLDQTDICE25', // Updated Subscription Haircut + Beard Service ID
         tier: 'Gold',
         price: 130,
         billingCycle: 'per month',
@@ -97,7 +97,7 @@ export const SUBSCRIPTION_DATA: ServiceCategory[] = [
         squarePlanId: 'SRDM2BT3QI32SIN4XYVJCCKW', // New Forever Plan (Fixed Price)
         squarePlanVariationId: 'LXQEGF7HRF2ODK26STS7AA33',
         itemVariationId: '5XANHPRPBRTYTJMV6B2POJ5S',
-        serviceId: '6ZJHSA7CEIIK2MAYR4OBTNUW',
+        serviceId: 'SMVJNPINNCCMWRLDQTDICE25', // Updated Subscription Haircut + Beard Service ID
         tier: 'Platinum',
         price: 240,
         billingCycle: 'per month',
