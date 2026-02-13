@@ -164,7 +164,7 @@ const ServiceSubCard: React.FC<{ plan: EnrichedPlan, isPlatinum: boolean, onSele
                 </h4>
                 <div className={styles.billingBadge}>
                      <span className={styles.billingText}>
-                        {plan.billingCycle.replace('billed ', '')}
+                        {plan.interval === 'MONTHLY' ? 'Monthly' : plan.interval}
                     </span>
                 </div>
             </div>
@@ -175,19 +175,21 @@ const ServiceSubCard: React.FC<{ plan: EnrichedPlan, isPlatinum: boolean, onSele
                 <span className={`${styles.priceValue} ${priceColorClass}`}>{plan.price}</span>
             </div>
 
-            {/* Savings Badge */}
+            {/* Savings Badge - REMOVED as it's no longer in data */}
+            {/* 
             <div className={styles.savingsWrapper}>
                 <span className={`${styles.savingsBadge} ${badgeClass}`}>
                     {plan.savings}
                 </span>
-            </div>
+            </div> 
+            */}
 
             {/* Features Divider */}
             <div className={`${styles.divider} ${dividerClass}`}></div>
 
             {/* Features List */}
             <ul className={styles.featuresList}>
-                {plan.features.map((feature, idx) => (
+                {plan.included.map((feature, idx) => (
                     <li key={idx} className={styles.featureItem}>
                         <Check size={18} className={`${styles.checkIcon} ${checkColorClass}`} />
                         <span className={styles.featureText}>{feature}</span>
