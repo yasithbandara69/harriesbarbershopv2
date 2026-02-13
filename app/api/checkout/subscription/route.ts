@@ -184,24 +184,20 @@ export async function GET(request: NextRequest) {
         lineItems: lineItems 
       },
       checkoutOptions: {
-        redirectUrl: "https://harriesbarbershopv2.vercel.app/dashboard?subscriptionSuccess=true", // Hardcoded to match script's success
+        redirectUrl: "https://harriesbarbershopv2.vercel.app/dashboard", // EXACT MATCH with script
         askForShippingAddress: false,
       },
-      // prePopulatedData: {
-      //     buyerEmail: user.email,
-      //     buyerPhoneNumber: user.user_metadata?.phone,
-      //     buyerAddress: {
-      //         firstName: user.user_metadata?.first_name,
-      //         lastName: user.user_metadata?.last_name,
-      //         // country: "AU" // optional, if known
-      //     }
-      // }
+      // prePopulatedData: { ... }
     };
     
     // Pass the Subscription Plan Variation ID if available
     if (subscriptionPlanVariationId) {
         body.checkoutOptions.subscriptionPlanId = subscriptionPlanVariationId;
     }
+
+    console.log("[Checkout] FINAL PAYLOAD:", JSON.stringify(body, (key, value) =>
+        typeof value === 'bigint' ? value.toString() : value
+    , 2));
 
     console.log("[Checkout] prePopulatedData:", JSON.stringify(body.prePopulatedData, null, 2));
 
