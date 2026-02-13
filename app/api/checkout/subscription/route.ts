@@ -194,10 +194,13 @@ export async function GET(request: NextRequest) {
         lineItems: lineItems 
       },
       checkoutOptions: {
-        redirectUrl: "https://harriesbarbershopv2.vercel.app/dashboard", // EXACT MATCH with script
+        redirectUrl: "https://harriesbarbershopv2.vercel.app/dashboard?subscriptionSuccess=true", // EXACT MATCH with script
         askForShippingAddress: false,
       },
-      // prePopulatedData: { ... }
+      prePopulatedData: {
+        buyerEmail: user.email,
+        buyerPhoneNumber: user.user_metadata?.phone
+      }
     };
     
     // Pass the Subscription Plan Variation ID if available
