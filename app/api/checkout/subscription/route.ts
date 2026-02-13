@@ -179,15 +179,15 @@ export async function GET(request: NextRequest) {
         redirectUrl: `${request.nextUrl.origin}/dashboard?subscriptionSuccess=true`, // Redirect back to dashboard with success flag
         askForShippingAddress: false,
       },
-      prePopulatedData: {
-          buyerEmail: user.email,
-          buyerPhoneNumber: user.user_metadata?.phone,
-          buyerAddress: {
-              firstName: user.user_metadata?.first_name,
-              lastName: user.user_metadata?.last_name,
-              // country: "AU" // optional, if known
-          }
-      }
+      // prePopulatedData: {
+      //     buyerEmail: user.email,
+      //     buyerPhoneNumber: user.user_metadata?.phone,
+      //     buyerAddress: {
+      //         firstName: user.user_metadata?.first_name,
+      //         lastName: user.user_metadata?.last_name,
+      //         // country: "AU" // optional, if known
+      //     }
+      // }
     };
     
     // Pass the Subscription Plan Variation ID if available
