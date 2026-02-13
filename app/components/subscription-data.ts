@@ -32,12 +32,12 @@ export const SUBSCRIPTION_DATA: ServiceCategory[] = [
     plans: [
       {
         id: 'gold-cut',
-        squarePlanId: 'EJGEEVYKOZMCQHWCLZI7MA4Z', // Manual Plan ID
-        squarePlanVariationId: 'CAL3SGZYVTDQJFR6NY5R72OD', // Manual Variation ID
-        itemVariationId: 'MN74NI7HDAD56CGSQHATYX75', // Manual Item Variation ID ($100)
+        squarePlanId: 'EN3KSUE7CWSLGN62HSC2OKOU', // Working Legacy Plan ($1)
+        squarePlanVariationId: 'YX4DI7J4L2G2XEPM5IINNTMS',
+        itemVariationId: 'MN74NI7HDAD56CGSQHATYX75',
         serviceId: 'IG3KC7ZQIDZFPETUY3UWRPTU',
         tier: 'Gold',
-        price: 100, // Matching the item price
+        price: 1, // Keep as $1 test for now
         billingCycle: 'per month',
         savings: 'Save 10%',
         credits: 2,
@@ -50,12 +50,12 @@ export const SUBSCRIPTION_DATA: ServiceCategory[] = [
       },
       {
         id: 'plat-cut',
-        squarePlanId: 'SFPSWC624HXPLC74XTMTTKAE',
-        squarePlanVariationId: 'SFPSWC624HXPLC74XTMTTKAE',
-        itemVariationId: 'K2N5M24UCFRN2TWJJCCPYUWU', // Platinum Membership Haircut (TESTING $1)
+        squarePlanId: 'WAYBKZFKXABYFCOQJLX3SE6J', // New Fixed Price
+        squarePlanVariationId: 'PGEIJ7RIFSWP2EI4BULIH743',
+        itemVariationId: 'J2UQ3PMSLG3XU7Y4XYZ2EXWF',
         serviceId: 'IG3KC7ZQIDZFPETUY3UWRPTU',
         tier: 'Platinum',
-        price: 1,
+        price: 180,
         billingCycle: 'per month',
         savings: 'Save 20%',
         credits: 4,
@@ -76,9 +76,9 @@ export const SUBSCRIPTION_DATA: ServiceCategory[] = [
     plans: [
       {
         id: 'gold-combo',
-        squarePlanId: 'LW5ZSQKJQ2TQ6GH3ZDRU',
-        squarePlanVariationId: 'NBFQJPSPRQMVTBHPC3LX6QCD',
-        itemVariationId: 'UTYAA22JQROPKLS4KZ4TSQZI', // Gold Membership Haircut + Beard - Billing
+        squarePlanId: 'HETCWO4GHKCB7ZY33XUMNDH4', // New Fixed Price
+        squarePlanVariationId: 'EJPBSXU6TM2TP5QCWSCQYTZF',
+        itemVariationId: 'MNIB2VOXZDWE27IUDYNU6OXC',
         serviceId: '6ZJHSA7CEIIK2MAYR4OBTNUW',
         tier: 'Gold',
         price: 130,
@@ -94,12 +94,12 @@ export const SUBSCRIPTION_DATA: ServiceCategory[] = [
       },
       {
         id: 'plat-combo',
-        squarePlanId: 'DWOHUIGPOJHQZQNG3ZJKL7U5',
-        squarePlanVariationId: 'DWOHUIGPOJHQZQNG3ZJKL7U5',
-        itemVariationId: 'VSZFN5PWDHPQDYNPKRDYYZMC', // Platinum Membership Haircut + Beard (TESTING $1)
+        squarePlanId: 'L6M4ZSZZFAUEUWWKLPAAXQDM', // New Fixed Price
+        squarePlanVariationId: 'DTVTNZFXOHDKXC7W5CF7L5ZX',
+        itemVariationId: '5XANHPRPBRTYTJMV6B2POJ5S',
         serviceId: '6ZJHSA7CEIIK2MAYR4OBTNUW',
         tier: 'Platinum',
-        price: 1,
+        price: 240,
         billingCycle: 'per month',
         savings: 'Save 15%',
         credits: 4,
