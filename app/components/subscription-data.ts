@@ -50,8 +50,8 @@ export const SUBSCRIPTION_DATA: ServiceCategory[] = [
       },
       {
         id: 'plat-cut',
-        squarePlanId: 'WAYBKZFKXABYFCOQJLX3SE6J', // New Fixed Price
-        squarePlanVariationId: 'PGEIJ7RIFSWP2EI4BULIH743',
+        squarePlanId: 'K52VUMY7IX4MVVQ3LEG6EWI2', // New Forever Plan (Fixed Price)
+        squarePlanVariationId: 'ACN565PXFAYNQIFZTZVI4WBJ',
         itemVariationId: 'J2UQ3PMSLG3XU7Y4XYZ2EXWF',
         serviceId: 'IG3KC7ZQIDZFPETUY3UWRPTU',
         tier: 'Platinum',
@@ -76,8 +76,8 @@ export const SUBSCRIPTION_DATA: ServiceCategory[] = [
     plans: [
       {
         id: 'gold-combo',
-        squarePlanId: 'HETCWO4GHKCB7ZY33XUMNDH4', // New Fixed Price
-        squarePlanVariationId: 'EJPBSXU6TM2TP5QCWSCQYTZF',
+        squarePlanId: 'USRP54Q7NJFMR2PQ5MU43PM6', // New Forever Plan (Fixed Price)
+        squarePlanVariationId: 'RT5YC76UK6CMGWJX3ROWZBHT',
         itemVariationId: 'MNIB2VOXZDWE27IUDYNU6OXC',
         serviceId: '6ZJHSA7CEIIK2MAYR4OBTNUW',
         tier: 'Gold',
@@ -94,8 +94,8 @@ export const SUBSCRIPTION_DATA: ServiceCategory[] = [
       },
       {
         id: 'plat-combo',
-        squarePlanId: 'L6M4ZSZZFAUEUWWKLPAAXQDM', // New Fixed Price
-        squarePlanVariationId: 'DTVTNZFXOHDKXC7W5CF7L5ZX',
+        squarePlanId: 'SRDM2BT3QI32SIN4XYVJCCKW', // New Forever Plan (Fixed Price)
+        squarePlanVariationId: 'LXQEGF7HRF2ODK26STS7AA33',
         itemVariationId: '5XANHPRPBRTYTJMV6B2POJ5S',
         serviceId: '6ZJHSA7CEIIK2MAYR4OBTNUW',
         tier: 'Platinum',
