@@ -34,8 +34,20 @@ export async function GET(request: NextRequest) {
   let customerIsValid = false;
   if (squareCustomerId) {
       try {
-          await squareClient.customers.retrieve(squareCustomerId);
-          customerIsValid = true;
+          // Check if the stored ID is an alias (merged) or valid
+          const { customer } = await squareClient.customers.retrieve(squareCustomerId);
+          if (customer) {
+              customerIsValid = true;
+              // SELF-HEALING: If the returned ID is different, it means the stored ID was merged.
+              // We should update our database to use the new canonical ID.
+              if (customer.id !== squareCustomerId) {
+                  console.log(`[Checkout] User has merged/aliased Customer ID. Updating ${squareCustomerId} -> ${customer.id}`);
+                  squareCustomerId = customer.id;
+                  await supabase.auth.updateUser({
+                      data: { square_customer_id: squareCustomerId }
+                  });
+              }
+          }
       } catch (e: any) {
           console.warn(`[Checkout] Stored Square ID ${squareCustomerId} not found in Square. Creating new one.`);
           // If 404 or other error, assume invalid and recreate
@@ -95,8 +107,6 @@ export async function GET(request: NextRequest) {
   const lineItems: any[] = [];
   if (itemVariationId) {
       // If we have a specific item mapped, use it. Pass quantity 1.
-      // Fetch the REAL price from Square to ensure we charge what is configured in the Dashboard
-      // This allows for dynamic pricing (e.g. $1 testing, discounts, updates) without redeploying.
       // Fetch the REAL price from Square to ensure we charge what is configured in the Dashboard
       // This allows for dynamic pricing (e.g. $1 testing, discounts, updates) without redeploying.
       let priceMoneyOverride: { amount: bigint, currency: string } | undefined;
@@ -180,7 +190,7 @@ export async function GET(request: NextRequest) {
       idempotencyKey: randomUUID(),
       order: {
         locationId: locationId!,
-        // customerId: squareCustomerId, // Still disabled to match script
+        customerId: squareCustomerId, // ENABLED: Link to our resolved Square Customer
         lineItems: lineItems 
       },
       checkoutOptions: {
