@@ -97,6 +97,22 @@ export async function createMemberBooking(
         
         if (!customerId) throw new Error("Could not resolve Square Customer ID");
 
+        // SYNC: Ensure we capture this ID in Supabase if it was missing
+        if (!user.user_metadata?.square_customer_id && customerId) {
+            console.log(`[MemberBooking] Linking resolved Square Customer ${customerId} to user ${user.id}`);
+            // 1. Update public profile (used by Dashboard)
+            await supabase.from('profiles').upsert({ 
+                id: user.id,
+                square_customer_id: customerId,
+                updated_at: new Date().toISOString()
+            }, { onConflict: 'id' });
+            
+            // 2. Update Auth Metadata (used by Session)
+            await supabase.auth.updateUser({ 
+                data: { square_customer_id: customerId } 
+            });
+        }
+
         const bookingReq: CreateBookingRequest = {
             booking: {
                 customerId,
