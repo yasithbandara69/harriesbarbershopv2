@@ -25,22 +25,30 @@ const client = new SquareClient({
   environment: isProduction ? "https://connect.squareup.com" : "https://connect.squareupsandbox.com",
 });
 
-const PLAN_ID = "EJGEEVYKOZMCQHWCLZI7MA4Z";
+const LOCATION_ID = process.env.SQUARE_LOCATION_ID;
 
-async function inspectPlan() {
-    console.log(`Inspecting Plan: ${PLAN_ID}`);
+async function inspectLocation() {
+    console.log(`Inspecting Location: ${LOCATION_ID}`);
     try {
-        const response = await client.catalog.object.get({ objectId: PLAN_ID });
-        const plan = (response.result || response).object;
+        const response = await client.locations.list();
+        const locations = (response.result || response).locations || [];
         
-        console.log("--- Plan Data ---");
-        console.log(JSON.stringify(plan, (key, value) => 
-            typeof value === 'bigint' ? value.toString() : value
-        , 2));
+        const location = locations.find(l => l.id === LOCATION_ID);
+        
+        if (location) {
+            console.log(`Name: ${location.name}`);
+            console.log(`Status: ${location.status}`);
+            console.log(`Currency: ${location.currency}`);
+            console.log(`Country: ${location.country}`);
+            console.log(`Capabilities: ${location.capabilities?.join(', ')}`);
+        } else {
+            console.log("❌ Location ID not found in account list.");
+            console.log("Available Locations:", locations.map(l => l.id).join(", "));
+        }
 
     } catch (e) {
         console.error("Error:", e);
     }
 }
 
-inspectPlan();
+inspectLocation();

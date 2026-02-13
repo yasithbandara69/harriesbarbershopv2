@@ -25,22 +25,27 @@ const client = new SquareClient({
   environment: isProduction ? "https://connect.squareup.com" : "https://connect.squareupsandbox.com",
 });
 
-const PLAN_ID = "EJGEEVYKOZMCQHWCLZI7MA4Z";
+const TARGET_VAR_ID = "MN74NI7HDAD56CGSQHATYX75";
 
-async function inspectPlan() {
-    console.log(`Inspecting Plan: ${PLAN_ID}`);
+async function inspectTarget() {
+    console.log(`Inspecting Target Variation: ${TARGET_VAR_ID}`);
     try {
-        const response = await client.catalog.object.get({ objectId: PLAN_ID });
-        const plan = (response.result || response).object;
+        const response = await client.catalog.object.get({ objectId: TARGET_VAR_ID });
+        const obj = (response.result || response).object;
         
-        console.log("--- Plan Data ---");
-        console.log(JSON.stringify(plan, (key, value) => 
-            typeof value === 'bigint' ? value.toString() : value
-        , 2));
+        console.log("--- Object Data ---");
+        console.log(`ID: ${obj.id}`);
+        console.log(`Type: ${obj.type}`);
+        
+        if (obj.type === "ITEM_VARIATION") {
+             console.log(`Parent Item ID: ${obj.itemVariationData.itemId}`);
+        } else {
+             console.log("Object is not an ITEM_VARIATION.");
+        }
 
     } catch (e) {
         console.error("Error:", e);
     }
 }
 
-inspectPlan();
+inspectTarget();

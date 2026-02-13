@@ -25,22 +25,29 @@ const client = new SquareClient({
   environment: isProduction ? "https://connect.squareup.com" : "https://connect.squareupsandbox.com",
 });
 
-const PLAN_ID = "EJGEEVYKOZMCQHWCLZI7MA4Z";
-
-async function inspectPlan() {
-    console.log(`Inspecting Plan: ${PLAN_ID}`);
+async function inspectItem() {
+    // The Item ID from previous run
+    const ITEM_ID = "H34DBIXU3LWJRRVR6EBU3OUM"; 
+    
+    console.log(`Inspecting Item: ${ITEM_ID}`);
     try {
-        const response = await client.catalog.object.get({ objectId: PLAN_ID });
-        const plan = (response.result || response).object;
+        const response = await client.catalog.object.get({ objectId: ITEM_ID });
+        const item = (response.result || response).object;
         
-        console.log("--- Plan Data ---");
-        console.log(JSON.stringify(plan, (key, value) => 
-            typeof value === 'bigint' ? value.toString() : value
-        , 2));
+        if (item && item.itemData && item.itemData.variations) {
+            console.log("Variations found:");
+            item.itemData.variations.forEach(v => {
+                console.log(`- Variation ID: ${v.id}`);
+                console.log(`  Name: ${v.itemVariationData.name}`);
+            });
+        } else {
+            console.log("Item found but no variations?");
+            console.log(JSON.stringify(item, null, 2));
+        }
 
     } catch (e) {
         console.error("Error:", e);
     }
 }
 
-inspectPlan();
+inspectItem();
