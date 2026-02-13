@@ -166,17 +166,25 @@ export async function GET(request: NextRequest) {
   try {
     // Generate Payment Link
     console.log(`[Checkout] Generating Payment Link for user ${user.email}`);
+    console.log(`[Checkout] Using Location ID: ${locationId}`); 
+    
+    // FAILSAFE: Verify Location ID matches expected production ID
+    // L3Z75JJJK1XZR
+    if (locationId !== 'L3Z75JJJK1XZR') {
+        console.warn(`[Checkout] WARNING: Location ID ${locationId} does not match expected 'L3Z75JJJK1XZR'`);
+    }
+
     // HARDCODED DIAGNOSTIC PAYLOAD
-    // Matches scripts/test-subscription-checkout.js EXACTLY
+    // Matches scripts/test-manual-checkout.js EXACTLY
     const body: any = {
       idempotencyKey: randomUUID(),
       order: {
         locationId: locationId!,
-        // customerId: squareCustomerId, // TEMPORARILY DISABLED: Testing if Customer Account is blocking payment
-        lineItems: lineItems // Use the dynamically constructed line items
+        // customerId: squareCustomerId, // Still disabled to match script
+        lineItems: lineItems 
       },
       checkoutOptions: {
-        redirectUrl: `${request.nextUrl.origin}/dashboard?subscriptionSuccess=true`, // Redirect back to dashboard with success flag
+        redirectUrl: "https://harriesbarbershopv2.vercel.app/dashboard?subscriptionSuccess=true", // Hardcoded to match script's success
         askForShippingAddress: false,
       },
       // prePopulatedData: {
