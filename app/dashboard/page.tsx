@@ -66,10 +66,6 @@ export default async function DashboardPage() {
         planDetails = allPlans.find(p => p.squarePlanId === subscription.plan_id);
     }
 
-    // FETCH APPOINTMENTS
-    let upcomingBookings = [];
-    let pastBookings = [];
-    
     // DEBUG: Re-fetch Square Customer by Email to show mismatch
     let correctCustomerId = null;
     try {
