@@ -73,10 +73,14 @@ export async function signup(formData: FormData) {
           }
       });
 
-      if (searchRes.customers && searchRes.customers.length > 0) {
-          squareCustomerId = searchRes.customers[0].id;
+      // Robust response handling for different SDK versions
+      const customers = searchRes.customers || searchRes.result?.customers || searchRes.body?.customers || [];
+
+      if (customers.length > 0) {
+          // Use existing customer
+          squareCustomerId = customers[0].id;
       } else {
-          // Create
+          // Create new customer
           const createRes = await squareClient.customers.create({
               givenName: firstName,
               familyName: lastName,
@@ -84,11 +88,12 @@ export async function signup(formData: FormData) {
               phoneNumber: phone,
               idempotencyKey: randomUUID()
           });
-          squareCustomerId = createRes.customer?.id;
+          const customer = createRes.customer || createRes.result?.customer || createRes.body?.customer;
+          squareCustomerId = customer?.id;
       }
   } catch (error) {
-      console.error("Square customer creation failed:", error);
-      return { error: "Failed to create customer record. Please try again." };
+      console.error("Square customer creation/search failed:", error);
+      return { error: "Failed to initialize customer record. Please try again." };
   }
 
   if (!squareCustomerId) {

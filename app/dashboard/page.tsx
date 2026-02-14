@@ -180,6 +180,13 @@ export default async function DashboardPage() {
                             }}>
                                 Book a haircut now
                             </Link>
+                            
+                            <p style={{ marginTop: '2rem', fontSize: '0.85rem', color: '#666' }}>
+                                Don't see your booking? {' '}
+                                <Link href="/api/fix-account" style={{ color: '#888', textDecoration: 'underline' }}>
+                                    Find missing appointments
+                                </Link>
+                            </p>
                         </div>
                     )}
 
