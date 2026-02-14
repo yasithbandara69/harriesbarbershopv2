@@ -51,20 +51,35 @@ export async function GET(request: Request) {
   }
 
   if (customers.length === 0) {
-      return NextResponse.redirect(new URL('/dashboard?msg=NoProfilesFound', request.url));
+       return NextResponse.redirect(new URL('/dashboard?msg=NoProfilesFound', request.url));
   }
 
-  if (customers.length <= 1) {
-      // Only one profile exists (likely the current one).
-      // If currentId is missing, set to this one.
-      const found = customers[0];
-      if (found && found.id !== currentId) {
-           await supabase.auth.updateUser({
-               data: { square_customer_id: found.id }
-           });
-           return NextResponse.redirect(new URL('/dashboard?msg=AccountFixed', request.url));
-      }
-      return NextResponse.redirect(new URL('/dashboard?msg=NoOtherProfilesFound', request.url));
+  // If we only found 1 customer
+  const foundId = customers[0].id;
+  
+  if (foundId && foundId === currentId) {
+      // Already correct
+      return NextResponse.redirect(new URL('/dashboard?msg=AlreadyLinked', request.url));
+  }
+  
+  // AUTO-HEAL: If found ID is different, update it aggressively.
+  // This handles cases where the user is linked to a 'Guest' profile (9VVR...) 
+  // but should be linked to their true profile (1AY5...).
+  if (foundId) {
+       console.log(`[FixAccount] Updating user ${user.id} from ${currentId} to ${foundId}`);
+       
+       await Promise.all([
+           supabase.from('profiles').upsert({ 
+               id: user.id,
+               square_customer_id: foundId,
+               updated_at: new Date().toISOString()
+           }, { onConflict: 'id' }),
+           supabase.auth.updateUser({ 
+               data: { square_customer_id: foundId } 
+           })
+       ]);
+       
+       return NextResponse.redirect(new URL('/dashboard?msg=AccountFixed', request.url));
   }
 
   // 2. Check current profile bookings
