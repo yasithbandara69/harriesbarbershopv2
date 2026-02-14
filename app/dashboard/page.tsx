@@ -70,10 +70,32 @@ export default async function DashboardPage() {
     let upcomingBookings = [];
     let pastBookings = [];
     
-    if (square_customer_id) {
+    // DEBUG: Re-fetch Square Customer by Email to show mismatch
+    let correctCustomerId = null;
+    try {
+        const { squareClient } = await import("@/lib/square");
+        const searchRes = await squareClient.customers.search({
+            query: { filter: { emailAddress: { exact: user.email } } }
+        });
+        const customers = searchRes.customers || (searchRes as any).result?.customers || (searchRes as any).body?.customers || [];
+        if (customers.length > 0) {
+            correctCustomerId = customers[0].id;
+        }
+    } catch (e) {
+        console.error("Debug search failed:", e);
+    }
+
+    // FETCH APPOINTMENTS
+    let upcomingBookings = [];
+    let pastBookings = [];
+    
+    // Use the linked ID if available, otherwise try the one found by email (auto-fallback for view)
+    const targetSquareId = square_customer_id || correctCustomerId;
+
+    if (targetSquareId) {
         try {
             // @ts-ignore
-            const bookings = await listCustomerBookings(square_customer_id);
+            const bookings = await listCustomerBookings(targetSquareId);
             const now = new Date();
             
             upcomingBookings = bookings.filter((b: any) => new Date(b.startAt) >= now);
