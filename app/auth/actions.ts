@@ -96,7 +96,10 @@ export async function signup(formData: FormData) {
   }
 
   // 2. Create Supabase User
-  const { error } = await supabase.auth.signUp({
+  // Force logout to clear any stale session/cookies from previous users
+  await supabase.auth.signOut();
+
+  const { error, data } = await supabase.auth.signUp({
     email,
     password,
     options: {
@@ -107,6 +110,7 @@ export async function signup(formData: FormData) {
         square_customer_id: squareCustomerId,
         role: 'user', // Default role
       },
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/api/auth/callback`
     },
   });
 
@@ -114,21 +118,12 @@ export async function signup(formData: FormData) {
     return { error: error.message };
   }
 
-  // If email confirmation is disabled in Supabase, this logs them in. 
-  // If enabled, they need to check email. 
-  // We will assume for now we redirect or show success.
-  // But strictly, we should redirect to dashboard if session exists.
-  
-  const { data: { session } } = await supabase.auth.getSession();
-  if (session) {
-      // Use return success logic here too
+  if (data?.session) {
+      // Immediate session created (Email confirmation disabled or implicit)
       return { success: true };
   } else {
-      // Email verification likely required
-      // For this user request, they want "redirected to user dashboard".
-      // Trying to redirect anyway, middleware might catch them if not active.
-      // But returning a message is safer if no session.
-      return { message: "Account created! Please check your email to confirm." };
+      // Email confirmation required
+      return { message: "Account created! Please check your email to confirm before logging in." };
   }
 }
 
