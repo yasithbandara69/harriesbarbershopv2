@@ -17,6 +17,7 @@ export async function createMemberBooking(
     staffId: string,
     startAt: string,
     customerDetails: {
+        id?: string;
         givenName: string;
         familyName: string;
         emailAddress: string;
@@ -63,24 +64,34 @@ export async function createMemberBooking(
         throw new Error("Failed to update credits.");
     }
 
+    // 3. Create Booking in Square
     try {
-        // 3. Create Booking in Square
-        // We reuse the logic from general booking but ensuring we use the member service
-        
-        // Resolve Customer (Use existing Square ID if linked, otherwise search/create)
-        // We can trust the user.user_metadata.square_customer_id if available?
-        // Let's verify or search to be safe.
-        let customerId = user.user_metadata?.square_customer_id;
+        let customerId = customerDetails.id;  // Use passed ID first
+
+        // Fallback: Check Profile Table (Source of Truth) if ID not passed
+        if (!customerId) {
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('square_customer_id')
+                .eq('id', user.id)
+                .single();
+            customerId = profile?.square_customer_id;
+        }
+
+        // Fallback to Metadata (might be stale)
+        if (!customerId) {
+            customerId = user.user_metadata?.square_customer_id;
+        }
 
         if (!customerId) {
-             // Try search by email
+             // Try search by email (Last Resort)
+             console.log("[MemberBooking] ID missing, searching by email...");
              const searchRes = await squareClient.customers.search({
                 query: { filter: { emailAddress: { exact: user.email } } }
              });
-             customerId = searchRes.customers?.[0]?.id;
-             
-             // If still no customer, create one? 
-             // Ideally members DO have a customer ID because they bought a sub.
+             // Robust handling
+             const customers = searchRes.customers || (searchRes as any).result?.customers || (searchRes as any).body?.customers || [];
+             customerId = customers?.[0]?.id;
         }
         
         if (!customerId) {
@@ -92,7 +103,8 @@ export async function createMemberBooking(
                 phoneNumber: customerDetails.phoneNumber,
                 idempotencyKey: randomUUID()
             });
-            customerId = createRes.customer?.id;
+            const created = createRes.customer || (createRes as any).result?.customer || (createRes as any).body?.customer;
+            customerId = created?.id;
         }
         
         if (!customerId) throw new Error("Could not resolve Square Customer ID");

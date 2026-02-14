@@ -45,13 +45,23 @@ export default function MemberBookingPage() {
             return;
         }
 
-        // Fetch Subscription
-        const { data: sub } = await supabase
-            .from('user_subscriptions')
-            .select('*')
-            .eq('user_id', user.id)
-            .eq('status', 'ACTIVE')
-            .single();
+        // Fetch Subscription & Profile (for accurate Square ID)
+        const [subRes, profileRes] = await Promise.all([
+             supabase
+                .from('user_subscriptions')
+                .select('*')
+                .eq('user_id', user.id)
+                .eq('status', 'ACTIVE')
+                .single(),
+             supabase
+                .from('profiles')
+                .select('square_customer_id')
+                .eq('id', user.id)
+                .single()
+        ]);
+
+        const sub = subRes.data;
+        const profile = profileRes.data;
 
         if (!sub || sub.credits < 1) {
             setError("You do not have any active booking credits.");
@@ -111,6 +121,7 @@ export default function MemberBookingPage() {
             setSelectedBarber({ id: HARRYS_ID, name: "Harry" });
             
             setUserInfo({
+                id: profile?.square_customer_id || user.user_metadata.square_customer_id,
                 givenName: user.user_metadata.first_name || '',
                 familyName: user.user_metadata.last_name || '',
                 emailAddress: user.email || '',

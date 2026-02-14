@@ -189,40 +189,43 @@ export async function createBooking(
     if (!locationId) throw new Error("Location ID not set");
 
     try {
-        // 1. Create or Retrieve Customer
-        const searchCustomerReq = {
-            query: {
-                filter: {
-                    emailAddress: {
-                        exact: customerDetails.emailAddress
-                    }
-                }
-            }
-        };
-        
+        // 1. Resolve Customer (Use existing Square ID if linked, otherwise search/create)
+        // Check for logged-in user context
         let customerId: string | undefined;
         try {
-            const searchRes = await squareClient.customers.search(searchCustomerReq);
-            const sResult = searchRes as any;
-            if (sResult.customers && sResult.customers.length > 0) {
-                customerId = sResult.customers[0].id;
+            const { createClient } = require("@/utils/supabase/server");
+            const supabase = await createClient();
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                // Check profile for truth
+                const { data: profile } = await supabase.from('profiles').select('square_customer_id').eq('id', user.id).single();
+                customerId = profile?.square_customer_id || user.user_metadata?.square_customer_id;
             }
         } catch (e) {
-            console.log("Customer search failed or empty, creating new.");
+            // Ignore auth errors, proceed as guest
         }
 
         if (!customerId) {
-            const createCustomerReq = {
+            // Try search by email
+            const searchRes = await squareClient.customers.search({
+                query: { filter: { emailAddress: { exact: customerDetails.emailAddress } } }
+            });
+            // Robust handling
+            const customers = searchRes.customers || (searchRes as any).result?.customers || (searchRes as any).body?.customers || [];
+            customerId = customers?.[0]?.id;
+        }
+
+        if (!customerId) {
+            // Fallback: Create new customer
+            const createRes = await squareClient.customers.create({
                 givenName: customerDetails.givenName,
                 familyName: customerDetails.familyName,
                 emailAddress: customerDetails.emailAddress,
                 phoneNumber: customerDetails.phoneNumber,
                 idempotencyKey: randomUUID() 
-            };
-            // Reverted to .create() based on Step 127 working code
-            const createRes = await squareClient.customers.create(createCustomerReq);
-            const cResult = createRes as any;
-            customerId = cResult.customer?.id;
+            });
+            const created = createRes.customer || (createRes as any).result?.customer || (createRes as any).body?.customer;
+            customerId = created?.id;
         }
 
         if (!customerId) throw new Error("Failed to resolve customer user.");

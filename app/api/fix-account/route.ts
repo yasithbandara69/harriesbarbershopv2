@@ -23,14 +23,35 @@ export async function GET(request: Request) {
   // 1. Search Square for ANY profiles for this email
   let customers: any[] = [];
   try {
-      const searchRes = await squareClient.customers.search({
+      // Search by Email
+      const emailSearch = await squareClient.customers.search({
           query: { filter: { emailAddress: { exact: email } } }
       });
-      // Handle response robustly
-      customers = searchRes.customers || (searchRes as any).result?.customers || (searchRes as any).body?.customers || [];
+      const emailCustomers = emailSearch.customers || (emailSearch as any).result?.customers || (emailSearch as any).body?.customers || [];
+      customers.push(...emailCustomers);
+
+      // Search by Phone (if available)
+      const phone = user.user_metadata?.phone;
+      if (phone) {
+          const phoneSearch = await squareClient.customers.search({
+              query: { filter: { phoneNumber: { exact: phone } } }
+          });
+          const phoneCustomers = phoneSearch.customers || (phoneSearch as any).result?.customers || (phoneSearch as any).body?.customers || [];
+          
+          // Add unique customers
+          for (const pc of phoneCustomers) {
+              if (!customers.find(c => c.id === pc.id)) {
+                  customers.push(pc);
+              }
+          }
+      }
   } catch (e) {
       console.error("Square search failed:", e);
-      return NextResponse.json({ error: "Square search failed." }, { status: 500 });
+      // Continue with what we have
+  }
+
+  if (customers.length === 0) {
+      return NextResponse.redirect(new URL('/dashboard?msg=NoProfilesFound', request.url));
   }
 
   if (customers.length <= 1) {
