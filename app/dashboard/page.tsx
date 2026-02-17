@@ -142,6 +142,21 @@ export default async function DashboardPage() {
                         <span className={styles.value}>{square_customer_id || 'Not linked'}</span>
                     </div>
 
+                    <div style={{marginTop:'1rem', paddingTop:'1rem', borderTop:'1px solid #333'}}>
+                        <p style={{fontSize:'0.8rem', color:'#666', marginBottom:'0.5rem', fontWeight:'bold'}}>DEBUG INFO:</p>
+                        <div className={styles.detailRow}>
+                            <span className={styles.label} style={{fontSize:'0.8rem'}}>Linked Square ID</span>
+                            <span className={styles.value} style={{fontSize:'0.8rem', fontFamily:'monospace'}}>{square_customer_id || 'None'}</span>
+                        </div>
+                         <div className={styles.detailRow}>
+                            <span className={styles.label} style={{fontSize:'0.8rem'}}>Found by Email</span>
+                            <span className={styles.value} style={{fontSize:'0.8rem', fontFamily:'monospace'}}>{correctCustomerId || 'None'}</span>
+                        </div>
+                        {correctCustomerId && square_customer_id !== correctCustomerId && (
+                             <p style={{color:'red', fontSize:'0.8rem', marginTop:'0.5rem'}}>MISMATCH DETECTED</p>
+                        )}
+                    </div>
+
                     {subscription && (
                          <div className={styles.detailRow} style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #333' }}>
                             <span className={styles.label}>Membership Credits</span>
