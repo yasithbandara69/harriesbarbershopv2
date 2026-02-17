@@ -207,8 +207,9 @@ export async function createBooking(
 
         if (!customerId) {
             // Try search by email
+            const searchEmail = customerDetails.emailAddress.toLowerCase().trim();
             const searchRes = await squareClient.customers.search({
-                query: { filter: { emailAddress: { exact: customerDetails.emailAddress } } }
+                query: { filter: { emailAddress: { exact: searchEmail } } }
             });
             // Robust handling
             const customers = searchRes.customers || (searchRes as any).result?.customers || (searchRes as any).body?.customers || [];

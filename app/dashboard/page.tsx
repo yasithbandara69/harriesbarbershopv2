@@ -66,27 +66,47 @@ export default async function DashboardPage() {
         planDetails = allPlans.find(p => p.squarePlanId === subscription.plan_id);
     }
 
-    // DEBUG: Re-fetch Square Customer by Email to show mismatch
+    // AUTO-HEALING: Check and fix mismatch
     let correctCustomerId = null;
     try {
         const { squareClient } = await import("@/lib/square");
-        const searchRes = await squareClient.customers.search({
-            query: { filter: { emailAddress: { exact: user.email } } }
-        });
-        const customers = searchRes.customers || (searchRes as any).result?.customers || (searchRes as any).body?.customers || [];
-        if (customers.length > 0) {
-            correctCustomerId = customers[0].id;
+        // Normalize email search
+        const searchEmail = (user.email || '').toLowerCase().trim();
+        if (searchEmail) {
+            const searchRes = await squareClient.customers.search({
+                query: { filter: { emailAddress: { exact: searchEmail } } }
+            });
+            const customers = searchRes.customers || (searchRes as any).result?.customers || (searchRes as any).body?.customers || [];
+            
+            if (customers.length > 0) {
+                correctCustomerId = customers[0].id;
+                
+                // If mismatch found, fix it in Supabase immediately
+                if (correctCustomerId && square_customer_id !== correctCustomerId) {
+                    console.log(`[Auto-Heal] Fixing mismatch for ${user.email}. DB: ${square_customer_id} -> Square: ${correctCustomerId}`);
+                    const { error: updateError } = await supabase
+                        .from('profiles')
+                        .update({ square_customer_id: correctCustomerId })
+                        .eq('id', user.id);
+                    
+                    if (!updateError) {
+                         // Update current page variable for display
+                    } else {
+                        console.error("[Auto-Heal] Failed to update profile:", updateError);
+                    }
+                }
+            }
         }
     } catch (e) {
-        console.error("Debug search failed:", e);
+        console.error("Auto-heal check failed:", e);
     }
 
     // FETCH APPOINTMENTS
     let upcomingBookings = [];
     let pastBookings = [];
     
-    // Use the linked ID if available, otherwise try the one found by email (auto-fallback for view)
-    const targetSquareId = square_customer_id || correctCustomerId;
+    // Use the Found ID (if auto-heal found one) or the Linked ID
+    const targetSquareId = correctCustomerId || square_customer_id;
 
     if (targetSquareId) {
         try {
@@ -139,23 +159,12 @@ export default async function DashboardPage() {
 
                     <div className={styles.detailRow}>
                         <span className={styles.label}>Square Customer ID</span>
-                        <span className={styles.value}>{square_customer_id || 'Not linked'}</span>
+                        <span className={styles.value} style={{ fontSize: '0.8rem', color: '#666' }}>
+                            {correctCustomerId ? 'Linked & Verified' : (square_customer_id ? 'Linked' : 'Not linked')}
+                        </span>
                     </div>
 
-                    <div style={{marginTop:'1rem', paddingTop:'1rem', borderTop:'1px solid #333'}}>
-                        <p style={{fontSize:'0.8rem', color:'#666', marginBottom:'0.5rem', fontWeight:'bold'}}>DEBUG INFO:</p>
-                        <div className={styles.detailRow}>
-                            <span className={styles.label} style={{fontSize:'0.8rem'}}>Linked Square ID</span>
-                            <span className={styles.value} style={{fontSize:'0.8rem', fontFamily:'monospace'}}>{square_customer_id || 'None'}</span>
-                        </div>
-                         <div className={styles.detailRow}>
-                            <span className={styles.label} style={{fontSize:'0.8rem'}}>Found by Email</span>
-                            <span className={styles.value} style={{fontSize:'0.8rem', fontFamily:'monospace'}}>{correctCustomerId || 'None'}</span>
-                        </div>
-                        {correctCustomerId && square_customer_id !== correctCustomerId && (
-                             <p style={{color:'red', fontSize:'0.8rem', marginTop:'0.5rem'}}>MISMATCH DETECTED</p>
-                        )}
-                    </div>
+                    {/* Debug UI Removed - Auto-Heal is active */}
 
                     {subscription && (
                          <div className={styles.detailRow} style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #333' }}>
