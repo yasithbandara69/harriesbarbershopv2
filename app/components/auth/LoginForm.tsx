@@ -17,6 +17,7 @@ export default function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProp
     const router = useRouter();
     const searchParams = useSearchParams();
     const planId = searchParams.get('planId');
+    const message = searchParams.get('message');
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -43,6 +44,12 @@ export default function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProp
         <div className={styles.container}>
             <h2 className={styles.title}>Login</h2>
             
+            {message && (
+                <div className={styles.success}>
+                    {message}
+                </div>
+            )}
+
             {error && (
                 <div className={styles.error}>
                     {error}

@@ -1,0 +1,18 @@
+.pageContainer {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #09090b; /* zinc-950 */
+    padding: 1rem;
+}
+
+.loginBox {
+    width: 100%;
+    max-width: 28rem; /* max-w-md */
+    background-color: #18181b; /* zinc-900 */
+    border: 1px solid #27272a; /* zinc-800 */
+    border-radius: 0.5rem;
+    padding: 2rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
