@@ -28,19 +28,18 @@ export default function SyncSubscriptionButton() {
   };
 
   return (
-    <div>
+    <div style={{ marginTop: '1rem' }}>
       <button 
         onClick={handleSync} 
         disabled={loading}
         style={{
             background: 'none',
-            border: 'none',
-            color: '#888',
-            padding: '0',
+            border: '1px solid var(--primary-gold)',
+            color: 'var(--primary-gold)',
+            padding: '8px 16px',
+            borderRadius: '4px',
             cursor: 'pointer',
-            fontSize: '0.85rem',
-            textDecoration: 'underline',
-            fontFamily: 'inherit'
+            fontSize: '0.9rem'
         }}
       >
         {loading ? 'Checking...' : 'Refresh Subscription Status'}

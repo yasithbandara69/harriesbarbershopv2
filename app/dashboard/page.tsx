@@ -273,33 +273,12 @@ export default async function DashboardPage() {
                         </div>
                     )}
 
-                    {!subscription && (
-                        <div style={{ marginTop: '2rem', textAlign: 'center' }}>
-                             <a href="/#membership" style={{
-                                display: 'inline-block',
-                                background: 'var(--primary-gold)',
-                                color: '#000',
-                                padding: '1rem 2rem',
-                                borderRadius: '4px',
-                                textDecoration: 'none',
-                                fontWeight: 'bold',
-                                fontSize: '1.1rem',
-                                textTransform: 'uppercase',
-                                marginBottom: '2rem'
-                             }}>
-                                Buy Subscription
-                             </a>
-                        </div>
-                    )}
-
                     {!subscription && square_customer_id && (
-                        <div style={{ marginTop: '1rem', padding: '1rem', borderTop: '1px dashed #333' }}>
-                             <p style={{ display: 'inline', fontSize: '0.85rem', color: '#666', marginRight: '0.5rem' }}>
+                        <div style={{ marginTop: '2rem', padding: '1.5rem', border: '1px dashed #444', borderRadius: '8px' }}>
+                             <p style={{ marginBottom: '1rem', fontSize: '0.9rem', color: '#888' }}>
                                 Recently subscribed but don't see it here?
                              </p>
-                             <div style={{ display: 'inline-block' }}>
-                                <SyncSubscriptionButton />
-                             </div>
+                             <SyncSubscriptionButton />
                         </div>
                     )}
 
