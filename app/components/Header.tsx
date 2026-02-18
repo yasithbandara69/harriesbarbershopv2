@@ -92,7 +92,7 @@ export default function Header() {
 
                 {/* Controls (Login, Signup, Book) */}
                 <div className={styles.controls}>
-                    {user ? (
+                    {user && pathname !== '/login' && pathname !== '/signup' ? (
                         <Link 
                             href="/dashboard" 
                             className={styles.btnBook} // Reuse book button style or create new one? reusing is usually safe for consistency
@@ -154,7 +154,7 @@ export default function Header() {
                         </Link>
                     ))}
                     
-                    {user ? (
+                    {user && pathname !== '/login' && pathname !== '/signup' ? (
                          <Link 
                             href="/dashboard" 
                             className={styles.mobileNavLink}
