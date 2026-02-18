@@ -5,10 +5,12 @@ import Link from 'next/link';
 
 import { Suspense } from 'react';
 
+import styles from '../login/Login.module.css';
+
 export default function SignupPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-zinc-950 text-white p-4">
-      <div className="w-full max-w-md bg-zinc-900 p-8 rounded-lg shadow-xl border border-zinc-800">
+    <div className={styles.pageContainer}>
+      <div className={styles.loginBox}>
         <Suspense fallback={<div>Loading...</div>}>
             <SignupForm 
                 onSwitchToLogin={() => window.location.href = '/login'} 
