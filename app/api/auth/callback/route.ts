@@ -10,11 +10,12 @@ export async function GET(request: Request) {
     const supabase = await createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
-      const redirectTo = process.env.NEXT_PUBLIC_SITE_URL 
-        ? `${process.env.NEXT_PUBLIC_SITE_URL}/login?message=Email+confirmed`
-        : `${origin}/login?message=Email+confirmed`;
+      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || origin;
+      // Construct absolute URL for redirect, handling base and path
+      const redirectUrl = new URL(next, baseUrl);
+      redirectUrl.searchParams.set('verified', 'true');
       
-      return NextResponse.redirect(redirectTo);
+      return NextResponse.redirect(redirectUrl);
     }
   }
 

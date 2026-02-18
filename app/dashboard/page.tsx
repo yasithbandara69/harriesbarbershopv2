@@ -6,6 +6,7 @@ import styles from "./dashboard.module.css";
 import Link from "next/link";
 import { Suspense } from "react";
 import SubscriptionSuccess from "../components/SubscriptionSuccess";
+import EmailVerificationSuccess from "../components/EmailVerificationSuccess";
 import SyncSubscriptionButton from "../components/SyncSubscriptionButton";
 import { SUBSCRIPTION_DATA } from "../components/subscription-data";
 
@@ -135,6 +136,10 @@ export default async function DashboardPage() {
 
             <Suspense fallback={null}>
                 <SubscriptionSuccess />
+            </Suspense>
+
+            <Suspense fallback={null}>
+                <EmailVerificationSuccess />
             </Suspense>
 
             <div className={styles.grid}>
