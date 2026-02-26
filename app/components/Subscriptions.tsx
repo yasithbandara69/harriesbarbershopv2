@@ -64,15 +64,15 @@ export default function Subscriptions() {
   };
 
   // Helper to extract plans by tier and attach service name
-  const getPlansByTier = (tier: 'Gold' | 'Platinum'): EnrichedPlan[] => {
+  const getPlansByTier = (tier: 'Essential' | 'Premium'): EnrichedPlan[] => {
     return SUBSCRIPTION_DATA.map(category => {
       const plan = category.plans.find(p => p.tier === tier);
       return plan ? { ...plan, serviceName: category.label } : null;
     }).filter((p): p is EnrichedPlan => p !== null);
   };
 
-  const goldPlans = getPlansByTier('Gold');
-  const platinumPlans = getPlansByTier('Platinum');
+  const goldPlans = getPlansByTier('Essential');
+  const platinumPlans = getPlansByTier('Premium');
 
   return (
     <section id="subscriptions" className={styles.section}>
@@ -81,6 +81,7 @@ export default function Subscriptions() {
             onClose={() => setIsAuthModalOpen(false)} 
             initialView="signup"
             onSuccess={handleAuthSuccess}
+            planId={selectedPlanId}
         />
         {/* Background Decorative Elements */}
         <div className={styles.decorativeBg}>
@@ -105,16 +106,16 @@ export default function Subscriptions() {
 
         {/* Main Grid: Shows Gold and Platinum Side-by-Side on large screens */}
         <div className={styles.tiersGrid}>
-          <TierContainer tier="Gold" plans={goldPlans} onSelect={handleSelectPlan} />
-          <TierContainer tier="Platinum" plans={platinumPlans} onSelect={handleSelectPlan} />
+          <TierContainer tier="Essential" plans={goldPlans} onSelect={handleSelectPlan} />
+          <TierContainer tier="Premium" plans={platinumPlans} onSelect={handleSelectPlan} />
         </div>
       </div>
     </section>
   );
 };
 
-const TierContainer: React.FC<{ tier: 'Gold' | 'Platinum', plans: EnrichedPlan[], onSelect: (p: EnrichedPlan) => void }> = ({ tier, plans, onSelect }) => {
-  const isPlatinum = tier === 'Platinum';
+const TierContainer: React.FC<{ tier: 'Essential' | 'Premium', plans: EnrichedPlan[], onSelect: (p: EnrichedPlan) => void }> = ({ tier, plans, onSelect }) => {
+  const isPlatinum = tier === 'Premium';
   const containerClass = isPlatinum ? styles.platinumContainer : styles.goldContainer;
   const iconBgClass = isPlatinum ? styles.iconBgPlatinum : styles.iconBgGold;
   const titleClass = isPlatinum ? styles.tierTitlePlatinum : styles.tierTitleGold;
@@ -128,10 +129,10 @@ const TierContainer: React.FC<{ tier: 'Gold' | 'Platinum', plans: EnrichedPlan[]
              {isPlatinum ? <Crown size={40} strokeWidth={1} /> : <Star size={40} strokeWidth={1} />}
          </div>
          <h3 className={`${styles.tierTitle} ${titleClass}`}>
-            {tier} Membership
+            {tier}
          </h3>
          <p className={styles.tierSubtitle}>
-            {isPlatinum ? 'The ultimate grooming experience' : 'Essential maintenance for the modern man'}
+            {isPlatinum ? 'Weekly Refresh' : 'Fortnightly Refresh'}
          </p>
       </div>
 
@@ -162,17 +163,16 @@ const ServiceSubCard: React.FC<{ plan: EnrichedPlan, isPlatinum: boolean, onSele
                 <h4 className={styles.serviceName}>
                     {plan.serviceName}
                 </h4>
-                <div className={styles.billingBadge}>
-                     <span className={styles.billingText}>
-                        {plan.interval === 'MONTHLY' ? 'Monthly' : plan.interval}
-                    </span>
-                </div>
             </div>
 
             {/* Price */}
             <div className={styles.priceWrapper}>
                 <span className={styles.currencySymbol}>$</span>
                 <span className={`${styles.priceValue} ${priceColorClass}`}>{plan.price}</span>
+            </div>
+            
+            <div className={styles.billedText}>
+                Billed {plan.interval === 'MONTHLY' ? 'Monthly' : plan.interval.toLowerCase()}
             </div>
 
             {/* Savings Badge - REMOVED as it's no longer in data */}

@@ -9,14 +9,15 @@ import styles from './Auth.module.css';
 interface LoginFormProps {
     onSuccess?: () => void;
     onSwitchToSignup?: () => void;
+    planId?: string | null;
 }
 
-export default function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
+export default function LoginForm({ onSuccess, onSwitchToSignup, planId: propPlanId }: LoginFormProps) {
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const router = useRouter();
     const searchParams = useSearchParams();
-    const planId = searchParams.get('planId');
+    const planId = propPlanId || searchParams.get('planId');
     const message = searchParams.get('message');
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -57,6 +58,7 @@ export default function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProp
             )}
 
             <form onSubmit={handleSubmit} className={styles.form}>
+                {planId && <input type="hidden" name="planId" value={planId} />}
                 <div>
                     <label className={styles.label}>Email or Phone</label>
                     <input 

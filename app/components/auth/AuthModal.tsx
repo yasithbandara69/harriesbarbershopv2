@@ -10,9 +10,10 @@ interface AuthModalProps {
     onClose: () => void;
     initialView?: 'login' | 'signup';
     onSuccess?: () => void;
+    planId?: string | null;
 }
 
-export default function AuthModal({ isOpen, onClose, initialView = 'signup', onSuccess }: AuthModalProps) {
+export default function AuthModal({ isOpen, onClose, initialView = 'signup', onSuccess, planId }: AuthModalProps) {
     const [view, setView] = useState<'login' | 'signup'>(initialView);
 
     // Reset view when modal opens/closes if needed, or just let it persist. 
@@ -27,11 +28,13 @@ export default function AuthModal({ isOpen, onClose, initialView = 'signup', onS
                     <LoginForm 
                         onSuccess={onSuccess} 
                         onSwitchToSignup={() => setView('signup')} 
+                        planId={planId}
                     />
                 ) : (
                     <SignupForm 
                         onSuccess={onSuccess} 
                         onSwitchToLogin={() => setView('login')} 
+                        planId={planId}
                     />
                 )}
             </div>

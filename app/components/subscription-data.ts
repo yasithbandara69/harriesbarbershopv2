@@ -8,9 +8,8 @@ export interface SubscriptionPlan {
   id: string;
   squarePlanId: string; // The ID from Square Dashboard (e.g., "L6... or similar")
   squarePlanVariationId?: string; // The Variation ID specific for checkout (The ID inside the plan)
-  itemVariationId?: string; // The specific Item Variation ID required for "Varies by item" plans
   serviceId: string; // The 0-dollar service ID for booking bookings
-  tier: 'Gold' | 'Platinum';
+  tier: 'Essential' | 'Premium';
   price: number;
   interval: string; // e.g., "MONTHLY"
   credits: number; // Number of appointments included per month
@@ -32,18 +31,18 @@ export const SUBSCRIPTION_DATA: ServiceCategory[] = [
     plans: [
       {
         id: 'gold-cut',
-        squarePlanId: 'EN3KSUE7CWSLGN62HSC2OKOU', // Working Legacy Plan ($1)
-        squarePlanVariationId: 'YX4DI7J4L2G2XEPM5IINNTMS',
-        itemVariationId: 'MN74NI7HDAD56CGSQHATYX75',
+        squarePlanId: 'TZFH5YML6ZEMQHMKQBUJ34UN', // Fixed Price Endless Plan ($100)
+        squarePlanVariationId: 'LNYMDFILAERC4QFPNQPZIBFF',
         serviceId: 'IG3KC7ZQIDZFPETUY3UWRPTU', // Updated Subscription Haircut Variation ID
-        tier: 'Gold',
-        price: 1, // Keep as $1 test for now
+        tier: 'Essential',
+        price: 100, // Updated price
         interval: 'MONTHLY',
         credits: 2,
         included: [
-          'Monthly Haircut',
-          'Free Cleanup',
-          'Product Discounts'
+          '2 haircut credits per month',
+          'Save 10% on every haircut',
+          'Monthly renewal',
+          'Free birthday week refresh'
         ],
         notIncluded: [
           'Beard Trim',
@@ -52,19 +51,19 @@ export const SUBSCRIPTION_DATA: ServiceCategory[] = [
       },
       {
         id: 'platinum-cut',
-        squarePlanId: 'K52VUMY7K6YEJHVR2P2R3M6R', // New Forever Plan (Fixed Price)
-        squarePlanVariationId: 'TFSY2VFPHQJ4JTGSPGFVVJQA',
-        itemVariationId: 'L3M7G47Q63K2X5Q55K4I75U7',
+        squarePlanId: 'BUDXPHD2Y5EZ7UIDBYMW623E', // Fixed Price Endless Plan ($180)
+        squarePlanVariationId: 'LN5H7B6ESL45L6YYHX3MUNNS',
         serviceId: 'IG3KC7ZQIDZFPETUY3UWRPTU', // Updated Subscription Haircut Variation ID
-        tier: 'Platinum',
+        tier: 'Premium',
         price: 180,
         interval: 'MONTHLY',
         credits: 4,
         included: [
-          'Bi-Weekly Haircut (2/mo)',
-          'Free Cleanups (Unlimited)',
-          'Priority Booking',
-          'Product Discounts'
+          '4 haircut credits per month',
+          'Save 20% every month',
+          'Monthly renewal',
+          'Free birthday week refresh',
+          '10% discount on any product'
         ],
         notIncluded: [
           'Beard Trim'
@@ -79,18 +78,18 @@ export const SUBSCRIPTION_DATA: ServiceCategory[] = [
     plans: [
       {
         id: 'gold-combo',
-        squarePlanId: 'USRP54Q7NJFMR2PQ5MU43PM6', // New Forever Plan (Fixed Price)
-        squarePlanVariationId: 'RT5YC76UK6CMGWJX3ROWZBHT',
-        itemVariationId: 'MNIB2VOXZDWE27IUDYNU6OXC',
+        squarePlanId: 'HL5VE743PNSICUCYAOCLTTET', // Fixed Price Endless Plan ($130)
+        squarePlanVariationId: 'WODSYCJGMBI7VB2EQMAYR4UB',
         serviceId: '6ZJHSA7CEIIK2MAYR4OBTNUW', // Updated Subscription Haircut + Beard Variation ID
-        tier: 'Gold',
+        tier: 'Essential',
         price: 130,
         interval: 'MONTHLY',
         credits: 2,
         included: [
-          'Monthly Haircut + Beard Trim',
-          'Free Cleanup',
-          'Product Discounts'
+          '2 haircut & beard trims per month',
+          'Save 10% on every service',
+          'Monthly renewal',
+          'Free birthday week refresh'
         ],
         notIncluded: [
           'VIP Booking Priority'
@@ -98,19 +97,19 @@ export const SUBSCRIPTION_DATA: ServiceCategory[] = [
       },
       {
         id: 'platinum-combo',
-        squarePlanId: 'SRDM2BT37ZJL2PL4F4O6654F', // New Forever Plan (Fixed Price)
-        squarePlanVariationId: '6Y5M6Z4Q3J4J5G4X3K3I55J6',
-        itemVariationId: 'J5K3M67Q43K2X5Q55K4I75U7',
+        squarePlanId: 'MHOBTRKJ75F6S2DH5QWSPXPB', // Fixed Price Endless Plan ($240)
+        squarePlanVariationId: 'T36L2EOTEHWDUSYDIFHU3C5G',
         serviceId: '6ZJHSA7CEIIK2MAYR4OBTNUW', // Updated Subscription Haircut + Beard Variation ID
-        tier: 'Platinum',
+        tier: 'Premium',
         price: 240,
         interval: 'MONTHLY',
         credits: 4,
         included: [
-          'Bi-Weekly Haircut + Beard (2/mo)',
-          'Free Cleanups (Unlimited)',
-          'Priority Booking',
-          'Product Discounts'
+          '4 haircut & beard credits per month',
+          'Save 20% every month',
+          'Monthly renewal',
+          'Free birthday week refresh',
+          '10% discount on any product'
         ],
         notIncluded: []
       }

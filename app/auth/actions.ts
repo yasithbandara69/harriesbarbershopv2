@@ -58,6 +58,7 @@ export async function signup(formData: FormData) {
   const firstName = formData.get('firstName') as string;
   const lastName = formData.get('lastName') as string;
   const phone = formData.get('phone') as string;
+  const planId = formData.get('planId') as string | null;
 
   // 1. Create Square Customer
   let squareCustomerId: string | undefined;
@@ -104,6 +105,9 @@ export async function signup(formData: FormData) {
   // Force logout to clear any stale session/cookies from previous users
   await supabase.auth.signOut();
 
+  const nextUrl = planId ? `/api/checkout/subscription?planId=${planId}` : '/dashboard';
+  const emailRedirectTo = `${process.env.NEXT_PUBLIC_SITE_URL}/api/auth/callback?next=${encodeURIComponent(nextUrl)}`;
+
   const { error, data } = await supabase.auth.signUp({
     email,
     password,
@@ -115,7 +119,7 @@ export async function signup(formData: FormData) {
         square_customer_id: squareCustomerId,
         role: 'user', // Default role
       },
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/api/auth/callback`
+      emailRedirectTo: emailRedirectTo
     },
   });
 

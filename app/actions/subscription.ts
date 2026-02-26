@@ -71,7 +71,28 @@ export async function syncSubscriptionStatus() {
         return { error: "Subscription active but Plan not recognized. Contact support." };
     }
 
-    // 4. Update Database
+    // 4. Determine Valid Credits (Exploit Fix)
+    // Check if the user already has this subscription rolling in the database
+    const { data: existingSub } = await supabase
+        .from('user_subscriptions')
+        .select('credits, current_period_end')
+        .eq('user_id', user.id)
+        .single();
+
+    let safeCredits = foundPlan.credits;
+
+    if (existingSub && existingSub.current_period_end && activeSub.chargedThroughDate) {
+        const dbEndDate = new Date(existingSub.current_period_end).getTime();
+        const squareEndDate = new Date(activeSub.chargedThroughDate).getTime();
+
+        // If the Square billing period is the exact same (or older) as our database record, 
+        // the user is in the same month. Do NOT reset their credits.
+        if (squareEndDate <= dbEndDate) {
+            safeCredits = existingSub.credits;
+        }
+    }
+
+    // 5. Update Database
     const { error } = await supabase
         .from('user_subscriptions')
         .upsert({
@@ -79,7 +100,7 @@ export async function syncSubscriptionStatus() {
             square_subscription_id: activeSub.id,
             plan_id: planId,
             status: activeSub.status,
-            credits: foundPlan.credits,
+            credits: safeCredits,
             current_period_start: activeSub.startDate,
             current_period_end: activeSub.chargedThroughDate,
             updated_at: new Date().toISOString()

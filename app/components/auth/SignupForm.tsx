@@ -10,15 +10,16 @@ import styles from './Auth.module.css';
 interface SignupFormProps {
     onSuccess?: () => void;
     onSwitchToLogin?: () => void;
+    planId?: string | null;
 }
 
-export default function SignupForm({ onSuccess, onSwitchToLogin }: SignupFormProps) {
+export default function SignupForm({ onSuccess, onSwitchToLogin, planId: propPlanId }: SignupFormProps) {
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState<string | null>(null);
     const router = useRouter();
     const searchParams = useSearchParams();
-    const planId = searchParams.get('planId');
+    const planId = propPlanId || searchParams.get('planId');
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -77,6 +78,7 @@ export default function SignupForm({ onSuccess, onSwitchToLogin }: SignupFormPro
             ) : (
                 <>
                 <form onSubmit={handleSubmit} className={styles.form}>
+                    {planId && <input type="hidden" name="planId" value={planId} />}
                     <div className={styles.grid}>
                         <div>
                             <label className={styles.label}>First Name</label>

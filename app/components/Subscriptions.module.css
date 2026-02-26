@@ -250,30 +250,14 @@
   justify-content: center;
 }
 
-.billingBadge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.1rem 0.5rem;
-  border-radius: 9999px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background-color: rgba(0, 0, 0, 0.4);
-}
 
-.billingText {
-  font-size: 0.6rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.025em;
-  color: #9ca3af;
-}
 
 .priceWrapper {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.15rem;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.25rem;
 }
 
 .currencySymbol {
@@ -289,6 +273,14 @@
 }
 @media (min-width: 1024px) {
   .priceValue { font-size: 2.5rem; }
+}
+
+.billedText {
+  text-align: center;
+  font-family: var(--font-inter);
+  color: #9ca3af;
+  font-size: 0.75rem;
+  margin-bottom: 1rem;
 }
 
 .textGold { color: var(--color-gold); }

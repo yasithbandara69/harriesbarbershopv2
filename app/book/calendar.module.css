@@ -89,12 +89,11 @@
 }
 
 .disabled {
-  color: var(--muted, #444);
+  color: #777;
   cursor: not-allowed;
-  opacity: 0.5;
 }
 
 .outsideMonth {
-  color: var(--muted, #444);
+  color: #555;
   pointer-events: none;
 }

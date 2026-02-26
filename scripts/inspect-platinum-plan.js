@@ -26,7 +26,7 @@ const client = new SquareClient({
 });
 
 async function inspectPlans() {
-    const OLD_PLAT_ID = "TSHE4PYA5732HHUE3YG3FQJR";
+    const OLD_PLAT_ID = 'TZFH5YML6ZEMQHMKQBUJ34UN';
     
     try {
         console.log(`Inspecting OLD Platinum Plan: ${OLD_PLAT_ID}...`);
@@ -38,7 +38,8 @@ async function inspectPlans() {
         const result = response.result || response;
         if (result.object) {
             console.log("\n--- OLD PLAN OBJECT ---");
-            console.log(JSON.stringify(result.object, null, 2));
+            console.log(JSON.stringify(result.object, (key, value) =>
+                typeof value === 'bigint' ? value.toString() : value, 2));
         } else {
             console.log("Old Plan NOT FOUND.");
         }

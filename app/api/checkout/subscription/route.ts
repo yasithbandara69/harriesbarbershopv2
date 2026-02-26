@@ -84,9 +84,9 @@ export async function GET(request: NextRequest) {
      return NextResponse.json({ error: "No Square Customer ID found or created." }, { status: 500 });
   }
 
-  // Lookup the plan in our internal data to find the corresponding Item Variation ID and Subscription Variation ID
-  let itemVariationId: string | undefined;
+  // Lookup the plan in our internal data to find the corresponding Subscription Variation ID and naming details
   let subscriptionPlanVariationId: string | undefined;
+  let planName: string = "Subscription Enrollment";
   
   console.log(`[Checkout] Processing Plan ID: ${planId}`);
   
@@ -94,84 +94,69 @@ export async function GET(request: NextRequest) {
   for (const category of SUBSCRIPTION_DATA) {
       const found = category.plans.find(p => p.squarePlanId === planId);
       if (found) {
-          itemVariationId = found.itemVariationId;
           subscriptionPlanVariationId = found.squarePlanVariationId;
+          planName = `${found.tier} ${category.label}`;
           break;
       }
   }
   console.log(`[Checkout] Mapped subscriptionPlanVariationId: ${subscriptionPlanVariationId}`);
-  
-  console.log(`[Checkout] Mapped itemVariationId: ${itemVariationId}`);
+  console.log(`[Checkout] Mapped planName: ${planName}`);
 
   // Construct Line Items
   const lineItems: any[] = [];
-  if (itemVariationId) {
-      // If we have a specific item mapped, use it. Pass quantity 1.
-      // Fetch the REAL price from Square to ensure we charge what is configured in the Dashboard
-      // This allows for dynamic pricing (e.g. $1 testing, discounts, updates) without redeploying.
-      let priceMoneyOverride: { amount: bigint, currency: string } | undefined;
+  
+  // Fetch the REAL price from Square to ensure we charge what is configured in the Dashboard
+  // This allows for dynamic pricing (e.g. $1 testing, discounts, updates) without redeploying.
+  let priceMoneyOverride: { amount: bigint, currency: string } | undefined;
 
-      if (subscriptionPlanVariationId) {
-        try {
-            console.log(`[Checkout] Fetching price for Subscription Variation: ${subscriptionPlanVariationId}`);
-            const response = await squareClient.catalog.object.get({
-                objectId: subscriptionPlanVariationId
-            });
-            
-            // Handle different SDK response structures
-            // @ts-ignore
-            const objectData = response.result?.object || response.body?.object || response.object;
+  if (subscriptionPlanVariationId) {
+    try {
+        console.log(`[Checkout] Fetching price for Subscription Variation: ${subscriptionPlanVariationId}`);
+        const response = await squareClient.catalog.object.get({
+            objectId: subscriptionPlanVariationId
+        });
+        
+        // Handle different SDK response structures
+        // @ts-ignore
+        const objectData = response.result?.object || response.body?.object || response.object;
 
-            if (objectData?.subscriptionPlanVariationData?.phases?.[0]?.recurringPriceMoney) {
-                const money = objectData.subscriptionPlanVariationData.phases[0].recurringPriceMoney;
-                if (money.amount !== undefined && money.currency !== undefined) {
-                    priceMoneyOverride = {
-                        amount: money.amount,
-                        currency: money.currency
-                    };
-                    console.log(`[Checkout] Fetched fixed price from Square: ${priceMoneyOverride.amount} ${priceMoneyOverride.currency}`);
-                }
-            } else {
-                console.log("[Checkout] No fixed price in plan (likely 'Varies by Item'). Using Item Catalog Price.");
-            }
-        } catch (e) {
-            console.error("[Checkout] Failed to fetch subscription price from Square:", e);
-            // Fallback to internal data ONLY if we really can't get data, 
-            // but if the plan is "Varies by Item", we shouldn't force internal price either?
-            // Let's stick to safe fallback if API fails completely.
-            const plan = SUBSCRIPTION_DATA.flatMap(c => c.plans).find(p => p.squarePlanId === planId);
-            if (plan) {
+        const phase = objectData?.subscriptionPlanVariationData?.phases?.[0];
+        const money = phase?.pricing?.priceMoney || phase?.pricing?.price || phase?.recurringPriceMoney;
+
+        if (money) {
+            if (money.amount !== undefined && money.currency !== undefined) {
                 priceMoneyOverride = {
-                    amount: BigInt(Math.round(plan.price * 100)),
-                    currency: "AUD"
+                    amount: BigInt(money.amount),
+                    currency: money.currency
                 };
-                console.log(`[Checkout] Used fallback internal price: ${priceMoneyOverride.amount}`);
+                console.log(`[Checkout] Fetched fixed price from Square: ${priceMoneyOverride.amount} ${priceMoneyOverride.currency}`);
             }
+        } else {
+            console.log("[Checkout] No fixed price in plan (likely 'Varies by Item'). Using Item Catalog Price.");
         }
-      }
-
-      const lineItem: any = {
-          catalogObjectId: itemVariationId,
-          quantity: "1"
-      };
-
-      if (priceMoneyOverride) {
-          lineItem.basePriceMoney = priceMoneyOverride;
-      }
-
-      lineItems.push(lineItem);
-  } else {
-      console.log(`[Checkout] No itemVariationId found. Using fallback.`);
-      // Fallback to dummy item if no mapping found (should not happen for configured plans)
-      lineItems.push({
-        name: "Subscription Enrollment",
-        quantity: "1",
-        basePriceMoney: {
-          amount: BigInt(0),
-          currency: "AUD", 
+    } catch (e) {
+        console.error("[Checkout] Failed to fetch subscription price from Square:", e);
+        const plan = SUBSCRIPTION_DATA.flatMap(c => c.plans).find(p => p.squarePlanId === planId);
+        if (plan) {
+            priceMoneyOverride = {
+                amount: BigInt(Math.round(plan.price * 100)),
+                currency: "AUD"
+            };
+            console.log(`[Checkout] Used fallback internal price: ${priceMoneyOverride.amount}`);
         }
-      });
+    }
   }
+
+  const lineItem: any = {
+      name: planName,
+      quantity: "1"
+  };
+
+  if (priceMoneyOverride) {
+      lineItem.basePriceMoney = priceMoneyOverride;
+  }
+
+  lineItems.push(lineItem);
 
   try {
     // Generate Payment Link
