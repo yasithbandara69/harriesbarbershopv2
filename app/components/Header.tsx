@@ -44,8 +44,9 @@ export default function Header() {
 
     const navItems = [
         { name: "HOME", href: "/" },
+        { name: "ABOUT", href: "/#about" },
         { name: "WORKS", href: "/#works" },
-        { name: "SERVICES", href: "/#services" },
+        { name: "SUBSCRIPTIONS", href: "/#subscriptions" },
     ];
 
     const openLogin = () => {

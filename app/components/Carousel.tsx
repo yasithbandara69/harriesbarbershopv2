@@ -70,7 +70,7 @@ export default function Carousel() {
   );
 
   return (
-    <div className={styles.carouselSection}>
+    <div id="works" className={styles.carouselSection}>
       <div className={styles.header}>
         <h2 className={styles.title}>Our Signature Styles</h2>
         <p className={styles.subtitle}>Discover the perfect look for you</p>

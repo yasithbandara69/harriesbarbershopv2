@@ -26,7 +26,7 @@
     max-width: 896px; /* max-w-4xl */
     margin: 0 auto;
     padding: 2rem 1rem;
-    padding-top: 7rem; /* pt-28 */
+    padding-top: 8rem; /* Enough to comfortably clear the 5rem fixed header */
     min-height: 100vh;
     color: var(--foreground);
     font-family: var(--font-inter), sans-serif;

@@ -4,7 +4,7 @@ import styles from "./AboutUs.module.css";
 
 export default function AboutUs() {
   return (
-    <section className={styles.sectionWrapper}>
+    <section id="about" className={styles.sectionWrapper}>
       <div className={styles.container}>
         <div className={styles.imageContainer}>
           {/* Using a relative container for Next.js Image fill layout, or specific width/height */}
