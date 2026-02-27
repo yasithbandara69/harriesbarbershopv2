@@ -3,6 +3,7 @@ import styles from "./page.module.css";
 import SplashScreen from "./components/SplashScreen";
 import AboutUs from "./components/AboutUs";
 import Subscriptions from "./components/Subscriptions";
+import Carousel from "./components/Carousel";
 
 export default function Home() {
   return (
@@ -26,6 +27,7 @@ export default function Home() {
       </section>
       <AboutUs />
       <Subscriptions />
+      <Carousel />
     </main>
   );
 }
