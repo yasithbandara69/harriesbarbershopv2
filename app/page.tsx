@@ -4,6 +4,7 @@ import SplashScreen from "./components/SplashScreen";
 import AboutUs from "./components/AboutUs";
 import Subscriptions from "./components/Subscriptions";
 import Carousel from "./components/Carousel";
+import GoogleReviews from "./components/GoogleReviews";
 
 export default function Home() {
   return (
@@ -28,6 +29,7 @@ export default function Home() {
       <AboutUs />
       <Subscriptions />
       <Carousel />
+      <GoogleReviews />
     </main>
   );
 }

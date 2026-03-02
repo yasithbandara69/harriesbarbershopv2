@@ -1,0 +1,147 @@
+.section {
+  padding: 4rem 0;
+  background-color: var(--color-dark-800);
+  overflow: hidden;
+  border-top: 1px solid rgba(255, 255, 255, 0.05); /* Match the site's sleek aesthetic */
+}
+
+.container {
+  width: 100%;
+  margin: 0 auto;
+}
+
+.header {
+  text-align: center;
+  max-width: 48rem;
+  margin: 0 auto 3rem;
+  padding: 0 1.5rem;
+}
+
+.subheading {
+  color: #9ca3af;
+  font-family: var(--font-inter), sans-serif;
+  font-size: 0.875rem;
+}
+
+.heading {
+  font-family: var(--font-oswald), sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: white;
+  margin-bottom: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .heading {
+    font-size: 2.5rem;
+  }
+}
+
+.marqueeWrapper {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  padding: 1rem 0;
+  /* Add subtle fade effect on edges */
+  mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+}
+
+.marquee {
+  display: flex;
+  width: max-content;
+  gap: 1.5rem;
+  padding-left: 1.5rem; /* Give some initial buffer if needed */
+}
+
+
+
+.reviewCard {
+  background-color: #ffffff;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  width: 320px;
+  flex-shrink: 0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease;
+}
+
+.reviewCard:hover {
+  transform: translateY(-5px);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+.authorInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 1.2rem;
+  font-family: var(--font-inter), sans-serif;
+}
+
+.authorName {
+  font-family: var(--font-inter), sans-serif;
+  font-weight: 600;
+  color: #1f2937;
+  font-size: 0.95rem;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.reviewTime {
+  color: #6b7280;
+  font-size: 0.8rem;
+  margin: 0.2rem 0 0 0;
+  font-family: var(--font-inter), sans-serif;
+}
+
+.ratingInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.stars {
+  display: flex;
+  gap: 0.1rem;
+}
+
+.verifiedIcon {
+  margin-left: 0.25rem;
+}
+
+.reviewText {
+  color: #4b5563;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  font-family: var(--font-inter), sans-serif;
+  margin-bottom: 0.5rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
