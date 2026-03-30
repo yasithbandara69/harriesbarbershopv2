@@ -1,6 +1,7 @@
 'use server';
 
 import { squareClient, locationId } from "@/lib/square";
+import { createClient } from "@/utils/supabase/server";
 import { SearchAvailabilityRequest, CreateBookingRequest } from "square";
 import { randomUUID } from "crypto";
 
@@ -193,7 +194,6 @@ export async function createBooking(
         // Check for logged-in user context
         let customerId: string | undefined;
         try {
-            const { createClient } = require("@/utils/supabase/server");
             const supabase = await createClient();
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
@@ -431,7 +431,6 @@ export async function createSubscriptionBooking(
     const booking = await createBooking(serviceId, serviceVersion, staffId, startAt, customerDetails, notes);
 
     // Deduct 1 credit from Supabase profile on success
-    const { createClient } = require("@/utils/supabase/server");
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
