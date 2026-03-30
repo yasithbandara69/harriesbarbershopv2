@@ -1,69 +1,67 @@
-
 'use client';
 
-
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { SUBSCRIPTION_DATA } from './subscription-data';
 import { Button } from './Button';
 import { Check, Crown, Star } from 'lucide-react';
 import { SubscriptionPlan } from './subscription-data';
 import styles from './Subscriptions.module.css';
-import { createClient } from '@/utils/supabase/client';
-import { useRouter } from 'next/navigation';
-import AuthModal from './auth/AuthModal';
 
 interface EnrichedPlan extends SubscriptionPlan {
   serviceName: string;
 }
 
 export default function Subscriptions() {
-  const router = useRouter();
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  
-  // Modal State
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchUser = async () => {
-        const supabase = createClient();
-        const { data: { user } } = await supabase.auth.getUser();
-        setUser(user);
-        setLoading(false);
-    };
-    fetchUser();
-  }, []);
-
   const handleSelectPlan = async (plan: EnrichedPlan) => {
-    if (!plan.squarePlanId) {
-        alert("Configuration Error: No Square Plan ID found.");
+    try {
+      // 1. Check if user is logged in
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!session) {
+        // Redirect to login with a return URL
+        window.location.href = `/login?redirect=/?selectedPlan=${plan.id}#subscriptions`;
         return;
-    }
-
-    if (user) {
-        // User is logged in, redirect to checkout generation
-        // Use window.location.href to handle API redirects/errors correctly
-        window.location.href = `/api/checkout/subscription?planId=${plan.squarePlanId}`;
-    } else {
-        // User is NOT logged in, open the Auth Modal
-        setSelectedPlanId(plan.squarePlanId);
-        setIsAuthModalOpen(true);
-    }
-  };
-
-  const handleAuthSuccess = () => {
-      setIsAuthModalOpen(false);
-      if (selectedPlanId) {
-          // Use window.location.href so the browser handles the API response (redirect or JSON error) directly.
-          // This avoids Next.js Router trying to "fetch" the API route as a page transition.
-          window.location.href = `/api/checkout/subscription?planId=${selectedPlanId}`;
-      } else {
-          router.push('/dashboard');
       }
+
+      // Map local plan to Stripe Price ID
+      const priceMap: Record<string, string> = {
+        'essential-haircut': 'price_1TGfDmLJS030B1q4alm4pDpe',
+        'essential-beard': 'price_1TGfCMLJS030B1q41AbO2kwV',
+        'premium-haircut': 'price_1TFFPdLJS030B1q4pOhImkwQ',
+        'premium-beard': 'price_1TFFRVLJS030B1q4FNqhcnBS'
+      };
+
+      const priceId = priceMap[plan.id];
+      if (!priceId) {
+         alert("Invalid plan selected or missing Price ID.");
+         return;
+      }
+
+      // 2. Create Checkout Session
+      const response = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ priceId, planId: plan.id }),
+      });
+
+      const data = await response.json();
+
+      if (data.url) {
+        window.location.href = data.url; // Redirect to Stripe Checkout
+      } else {
+        throw new Error(data.error || 'Failed to create checkout session');
+      }
+    } catch (error) {
+      console.error("Checkout error:", error);
+      alert("Failed to initiate checkout. Please try again.");
+    }
   };
 
-  // Helper to extract plans by tier and attach service name
   const getPlansByTier = (tier: 'Essential' | 'Premium'): EnrichedPlan[] => {
     return SUBSCRIPTION_DATA.map(category => {
       const plan = category.plans.find(p => p.tier === tier);
@@ -76,22 +74,12 @@ export default function Subscriptions() {
 
   return (
     <section id="subscriptions" className={styles.section}>
-        <AuthModal 
-            isOpen={isAuthModalOpen} 
-            onClose={() => setIsAuthModalOpen(false)} 
-            initialView="signup"
-            onSuccess={handleAuthSuccess}
-            planId={selectedPlanId}
-        />
-        {/* Background Decorative Elements */}
         <div className={styles.decorativeBg}>
             <div className={styles.circleOne}></div>
             <div className={styles.circleTwo}></div>
         </div>
 
       <div className={styles.container}>
-        
-        {/* Header */}
         <div className={styles.header}>
           <span className={styles.subheading}>
             JOIN THE CLUB
@@ -104,7 +92,6 @@ export default function Subscriptions() {
           </p>
         </div>
 
-        {/* Main Grid: Shows Gold and Platinum Side-by-Side on large screens */}
         <div className={styles.tiersGrid}>
           <TierContainer tier="Essential" plans={goldPlans} onSelect={handleSelectPlan} />
           <TierContainer tier="Premium" plans={platinumPlans} onSelect={handleSelectPlan} />
@@ -122,8 +109,6 @@ const TierContainer: React.FC<{ tier: 'Essential' | 'Premium', plans: EnrichedPl
   
   return (
     <div className={`${styles.tierCard} ${containerClass}`}>
-      
-      {/* Tier Header (Top of the Box) */}
       <div className={styles.tierHeader}>
          <div className={`${styles.iconWrapper} ${iconBgClass}`}>
              {isPlatinum ? <Crown size={40} strokeWidth={1} /> : <Star size={40} strokeWidth={1} />}
@@ -136,7 +121,6 @@ const TierContainer: React.FC<{ tier: 'Essential' | 'Premium', plans: EnrichedPl
          </p>
       </div>
 
-      {/* Inner Content: Service Cards Side-by-Side */}
       <div className={styles.plansGrid}>
          {plans.map((plan) => (
              <ServiceSubCard key={plan.id} plan={plan} isPlatinum={isPlatinum} onSelect={onSelect} />
@@ -157,15 +141,12 @@ const ServiceSubCard: React.FC<{ plan: EnrichedPlan, isPlatinum: boolean, onSele
 
     return (
         <div className={`${styles.subCard} ${cardClass}`}>
-            
-            {/* Service Name Header */}
             <div className={styles.subCardHeader}>
                 <h4 className={styles.serviceName}>
                     {plan.serviceName}
                 </h4>
             </div>
 
-            {/* Price */}
             <div className={styles.priceWrapper}>
                 <span className={styles.currencySymbol}>$</span>
                 <span className={`${styles.priceValue} ${priceColorClass}`}>{plan.price}</span>
@@ -175,19 +156,8 @@ const ServiceSubCard: React.FC<{ plan: EnrichedPlan, isPlatinum: boolean, onSele
                 Billed {plan.interval === 'MONTHLY' ? 'Monthly' : plan.interval.toLowerCase()}
             </div>
 
-            {/* Savings Badge - REMOVED as it's no longer in data */}
-            {/* 
-            <div className={styles.savingsWrapper}>
-                <span className={`${styles.savingsBadge} ${badgeClass}`}>
-                    {plan.savings}
-                </span>
-            </div> 
-            */}
-
-            {/* Features Divider */}
             <div className={`${styles.divider} ${dividerClass}`}></div>
 
-            {/* Features List */}
             <ul className={styles.featuresList}>
                 {plan.included.map((feature, idx) => (
                     <li key={idx} className={styles.featureItem}>
@@ -197,10 +167,9 @@ const ServiceSubCard: React.FC<{ plan: EnrichedPlan, isPlatinum: boolean, onSele
                 ))}
             </ul>
 
-            {/* Action Button */}
             <Button 
                 fullWidth 
-                variant={btnVariant}
+                variant={btnVariant as any}
                 className={`${styles.selectBtn} ${btnClass}`}
                 onClick={() => onSelect(plan)}
             >

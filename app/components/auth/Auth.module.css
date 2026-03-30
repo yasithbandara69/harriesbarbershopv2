@@ -68,6 +68,26 @@
     border-color: var(--primary-gold);
 }
 
+.countrySelect {
+    width: 100px;
+    padding: 0.75rem;
+    border-radius: 0.25rem;
+    background-color: #09090b; /* zinc-950 */
+    border: 1px solid #3f3f46; /* zinc-700 */
+    color: white;
+    cursor: pointer;
+}
+
+.countrySelect:focus {
+    outline: none;
+    border-color: var(--primary-gold);
+}
+
+.phoneContainer {
+    display: flex;
+    gap: 0.5rem;
+}
+
 .button {
     width: 100%;
     background-color: var(--primary-gold);
@@ -113,4 +133,31 @@
 
 .linkButton:hover {
     text-decoration: underline;
+}
+
+.tabContainer {
+    display: flex;
+    background-color: #09090b; /* zinc-950 */
+    border: 1px solid #3f3f46; /* zinc-700 */
+    border-radius: 0.25rem;
+    padding: 0.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.tab {
+    flex: 1;
+    padding: 0.5rem;
+    background: transparent;
+    border: none;
+    color: #71717a; /* zinc-500 */
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 0.125rem;
+    transition: all 0.2s;
+}
+
+.tabActive {
+    background-color: #18181b; /* zinc-900 */
+    color: var(--primary-gold);
 }

@@ -13,6 +13,7 @@ interface LoginFormProps {
 }
 
 export default function LoginForm({ onSuccess, onSwitchToSignup, planId: propPlanId }: LoginFormProps) {
+    const [loginMethod, setLoginMethod] = useState<'email' | 'phone'>('email');
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const router = useRouter();
@@ -57,18 +58,58 @@ export default function LoginForm({ onSuccess, onSwitchToSignup, planId: propPla
                 </div>
             )}
 
+            <div className={styles.tabContainer}>
+                <button 
+                    type="button" 
+                    className={`${styles.tab} ${loginMethod === 'email' ? styles.tabActive : ''}`}
+                    onClick={() => setLoginMethod('email')}
+                >
+                    Email
+                </button>
+                <button 
+                    type="button" 
+                    className={`${styles.tab} ${loginMethod === 'phone' ? styles.tabActive : ''}`}
+                    onClick={() => setLoginMethod('phone')}
+                >
+                    Phone
+                </button>
+            </div>
+
             <form onSubmit={handleSubmit} className={styles.form}>
                 {planId && <input type="hidden" name="planId" value={planId} />}
-                <div>
-                    <label className={styles.label}>Email or Phone</label>
-                    <input 
-                        name="email" 
-                        type="text" 
-                        required 
-                        className={styles.input}
-                        placeholder="you@example.com or +1234567890"
-                    />
-                </div>
+                
+                {loginMethod === 'email' ? (
+                    <div>
+                        <label className={styles.label}>Email</label>
+                        <input 
+                            name="email" 
+                            type="email" 
+                            required 
+                            className={styles.input}
+                            placeholder="you@example.com"
+                        />
+                    </div>
+                ) : (
+                    <div>
+                        <label className={styles.label}>Phone</label>
+                        <div className={styles.phoneContainer}>
+                            <select name="countryCode" className={styles.countrySelect} defaultValue="+61">
+                                <option value="+61">🇦🇺 +61</option>
+                                <option value="+44">🇬🇧 +44</option>
+                                <option value="+1">🇺🇸 +1</option>
+                                <option value="+64">🇳🇿 +64</option>
+                            </select>
+                            <input 
+                                name="phoneNumber" 
+                                type="tel" 
+                                required 
+                                className={styles.input}
+                                placeholder="412345678"
+                            />
+                        </div>
+                    </div>
+                )}
+
                 <div>
                     <label className={styles.label}>Password</label>
                     <input 

@@ -303,3 +303,145 @@ export async function listCustomerBookings(customerId: string) {
         return [];
     }
 }
+
+export async function getSubscriptionUsage() {
+    const { createClient } = require("@/utils/supabase/server");
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+        return { isActive: false, error: "Not logged in" };
+    }
+
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+    
+    const stripeSubId = profile?.stripe_subscription_id;
+    let squareCustomerId = profile?.square_customer_id || user.user_metadata?.square_customer_id;
+
+    if (!stripeSubId) {
+        return { isActive: false, error: "No active subscription" };
+    }
+
+    // Auto-heal square_customer_id if missing
+    if (!squareCustomerId && user.email) {
+        const { squareClient } = await import("@/lib/square");
+        const searchRes = await squareClient.customers.search({
+            query: { filter: { emailAddress: { exact: user.email.toLowerCase().trim() } } }
+        });
+        const customers = searchRes.customers || (searchRes as any).result?.customers || [];
+        if (customers.length > 0) {
+            squareCustomerId = customers[0].id;
+        }
+    }
+
+    let planId = '';
+    let start = new Date();
+    let end = new Date();
+    let isSubActive = false;
+    let subCreated: number | null = null;
+    let maxCredits = 0;
+
+    try {
+        const Stripe = (await import('stripe')).default;
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2026-03-25.dahlia' as any });
+        const sub = await stripe.subscriptions.retrieve(stripeSubId) as any;
+        
+        isSubActive = sub.status === 'active' || sub.status === 'trialing';
+        
+        if (!isSubActive) {
+            return { isActive: false, error: `Subscription is ${sub.status}` };
+        }
+
+        subCreated = sub.created;
+
+        planId = sub.metadata?.planId || '';
+        if (!planId && sub.items?.data?.[0]?.price?.id) {
+            const priceId = sub.items.data[0].price.id;
+            if (priceId === 'price_1TGfDmLJS030B1q4alm4pDpe' || priceId === 'price_1TFFMdLJS030B1q4EdnRb2Yz') planId = 'essential-haircut';
+            else if (priceId === 'price_1TGfCMLJS030B1q41AbO2kwV' || priceId === 'price_1TFFNzLJS030B1q4tZet60XF') planId = 'essential-beard';
+            else if (priceId === 'price_1TFFPdLJS030B1q4pOhImkwQ') planId = 'premium-haircut';
+            else if (priceId === 'price_1TFFRVLJS030B1q4FNqhcnBS') planId = 'premium-beard';
+        }
+
+        maxCredits = planId.includes('premium') ? 4 : 2;
+
+        let startTimestamp = sub.current_period_start || (sub.data && sub.data.current_period_start);
+        let endTimestamp = sub.current_period_end || (sub.data && sub.data.current_period_end);
+
+        if (!startTimestamp || !endTimestamp) {
+            const firstItem = sub.items?.data?.[0];
+            startTimestamp = startTimestamp || firstItem?.current_period_start;
+            endTimestamp = endTimestamp || firstItem?.current_period_end;
+        }
+
+        if (startTimestamp && endTimestamp) {
+            start = new Date(Number(startTimestamp) * 1000);
+            end = new Date(Number(endTimestamp) * 1000);
+        }
+    } catch (e) {
+        console.error("Error fetching stripe sub:", e);
+        return { isActive: false, error: "Failed to fetch subscription details" };
+    }
+
+    const remainingCredits = profile.credits !== null && profile.credits !== undefined ? profile.credits : 0;
+
+    return {
+        isActive: true,
+        planId,
+        maxCredits,
+        remainingCredits,
+        resetDate: end.toISOString(),
+        subscriptionCreated: subCreated ? new Date(subCreated * 1000).toISOString() : null
+    };
+}
+
+export async function getHarryTeamMember() {
+    const team = await listTeamMembers();
+    const harry = team.find((m: any) => m.name.toLowerCase().includes('harry')) || team[0];
+    return harry;
+}
+
+export async function createSubscriptionBooking(
+    serviceId: string,
+    serviceVersion: number,
+    staffId: string,
+    startAt: string,
+    customerDetails: {
+        givenName: string;
+        familyName: string;
+        emailAddress: string;
+        phoneNumber: string;
+    },
+    notes?: string
+) {
+    const usage = await getSubscriptionUsage();
+    
+    if (!usage.isActive || usage.remainingCredits === undefined || usage.remainingCredits <= 0) {
+        const errorMsg = usage.resetDate 
+            ? `Insufficient credits. Your allowance resets on ${new Date(usage.resetDate).toLocaleDateString()}.`
+            : "No valid subscription or out of credits.";
+        throw new Error(errorMsg);
+    }
+
+    // Create the booking using the existing action
+    const booking = await createBooking(serviceId, serviceVersion, staffId, startAt, customerDetails, notes);
+
+    // Deduct 1 credit from Supabase profile on success
+    const { createClient } = require("@/utils/supabase/server");
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (user && usage.remainingCredits > 0) {
+        const newCredits = usage.remainingCredits - 1;
+        await supabase
+            .from('profiles')
+            .update({ credits: newCredits })
+            .eq('id', user.id);
+    }
+
+    return booking;
+}

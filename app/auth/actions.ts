@@ -8,12 +8,18 @@ import { redirect } from "next/navigation";
 export async function login(formData: FormData) {
   const supabase = await createClient();
 
-  const identifier = formData.get('email') as string; // We'll assume the input name matches the field, but logic handles both
+  const emailInput = formData.get('email') as string;
+  const countryCode = formData.get('countryCode') as string;
+  const phoneNumber = formData.get('phoneNumber') as string;
   const password = formData.get('password') as string;
 
+  let identifier = emailInput;
+  if (phoneNumber) {
+      const sanitizedNumber = phoneNumber.replace(/\D/g, '').replace(/^0/, '');
+      identifier = `${countryCode}${sanitizedNumber}`;
+  }
+
   const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier);
-  // Simple check: if not email, assume phone. Or use regex for phone.
-  // Supabase phone requires format. If user typed valid phone, pass it.
   
   let credentials: any = { password };
   if (isEmail) {
@@ -57,51 +63,13 @@ export async function signup(formData: FormData) {
   const password = formData.get('password') as string;
   const firstName = formData.get('firstName') as string;
   const lastName = formData.get('lastName') as string;
-  const phone = formData.get('phone') as string;
+  const countryCode = formData.get('countryCode') as string;
+  const phoneNumber = formData.get('phoneNumber') as string;
   const planId = formData.get('planId') as string | null;
 
-  // 1. Create Square Customer
-  let squareCustomerId: string | undefined;
-  try {
-      // Search first
-      const searchRes = await squareClient.customers.search({
-          query: {
-              filter: {
-                  emailAddress: {
-                      exact: email
-                  }
-              }
-          }
-      });
+  const sanitizedNumber = phoneNumber.replace(/\D/g, '').replace(/^0/, '');
+  const phone = `${countryCode}${sanitizedNumber}`;
 
-      // Robust response handling for different SDK versions
-      const customers = searchRes.customers || searchRes.result?.customers || searchRes.body?.customers || [];
-
-      if (customers.length > 0) {
-          // Use existing customer
-          squareCustomerId = customers[0].id;
-      } else {
-          // Create new customer
-          const createRes = await squareClient.customers.create({
-              givenName: firstName,
-              familyName: lastName,
-              emailAddress: email,
-              phoneNumber: phone,
-              idempotencyKey: randomUUID()
-          });
-          const customer = createRes.customer || createRes.result?.customer || createRes.body?.customer;
-          squareCustomerId = customer?.id;
-      }
-  } catch (error) {
-      console.error("Square customer creation/search failed:", error);
-      return { error: "Failed to initialize customer record. Please try again." };
-  }
-
-  if (!squareCustomerId) {
-       return { error: "Failed to resolve customer record." };
-  }
-
-  // 2. Create Supabase User
   // Force logout to clear any stale session/cookies from previous users
   await supabase.auth.signOut();
 
@@ -116,7 +84,6 @@ export async function signup(formData: FormData) {
         first_name: firstName,
         last_name: lastName,
         phone: phone,
-        square_customer_id: squareCustomerId,
         role: 'user', // Default role
       },
       emailRedirectTo: emailRedirectTo
@@ -140,4 +107,81 @@ export async function logout() {
   const supabase = await createClient();
   await supabase.auth.signOut();
   redirect('/');
+}
+
+export async function verifyOTP(email: string, token: string) {
+  const supabase = await createClient();
+  
+  const { error, data } = await supabase.auth.verifyOtp({
+    email,
+    token,
+    type: 'signup'
+  });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  const user = data?.user;
+  if (user) {
+      const { first_name, last_name, phone } = user.user_metadata || {};
+      
+      let squareCustomerId: string | undefined;
+      try {
+          // Search first
+          const searchRes = await squareClient.customers.search({
+              query: { filter: { emailAddress: { exact: email } } }
+          });
+          const customers = searchRes.customers || searchRes.result?.customers || searchRes.body?.customers || [];
+
+          if (customers.length > 0) {
+              squareCustomerId = customers[0].id;
+          } else {
+              // Create new customer
+              const createRes = await squareClient.customers.create({
+                  givenName: first_name || '',
+                  familyName: last_name || '',
+                  emailAddress: email,
+                  phoneNumber: phone || '',
+                  idempotencyKey: randomUUID()
+              });
+              const customer = createRes.customer || createRes.result?.customer || createRes.body?.customer;
+              squareCustomerId = customer?.id;
+          }
+      } catch (sqErr) {
+          console.error("Square customer creation/search failed during OTP verification:", sqErr);
+      }
+
+      // Update Supabase profiles table using the REST Admin Client to bypass RLS
+      if (squareCustomerId) {
+          const { createClient: createSupabaseJs } = await import('@supabase/supabase-js');
+          const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+          const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+          const adminClient = createSupabaseJs(supabaseUrl, supabaseKey, {
+              auth: { autoRefreshToken: false, persistSession: false }
+          });
+
+          await adminClient
+              .from('profiles')
+              .update({ square_customer_id: squareCustomerId })
+              .eq('id', user.id);
+      }
+  }
+
+  return { success: true };
+}
+
+export async function resendOTP(email: string) {
+  const supabase = await createClient();
+  
+  const { error } = await supabase.auth.resend({
+    type: 'signup',
+    email,
+  });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  return { success: true };
 }

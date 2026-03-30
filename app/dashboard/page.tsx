@@ -1,14 +1,13 @@
-import { listTeamMembers, listServices, searchAvailability, getServiceById, listCustomerBookings } from "@/app/actions";
+import { listCustomerBookings, getSubscriptionUsage } from "@/app/actions";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import { logout } from "@/app/auth/actions";
 import styles from "./dashboard.module.css";
 import Link from "next/link";
 import { Suspense } from "react";
-import SubscriptionSuccess from "../components/SubscriptionSuccess";
 import EmailVerificationSuccess from "../components/EmailVerificationSuccess";
-import SyncSubscriptionButton from "../components/SyncSubscriptionButton";
-import { SUBSCRIPTION_DATA } from "../components/subscription-data";
+import RescheduleLink from "../components/RescheduleLink";
+import { Star, Scissors, Calendar, Clock, User, CreditCard, History, CalendarDays, Crown } from "lucide-react";
 
 const formatStatus = (status: string) => {
     const map: Record<string, string> = {
@@ -24,7 +23,7 @@ const formatStatus = (status: string) => {
 
 const getStatusColor = (status: string) => {
     switch (status) {
-        case 'ACCEPTED': return '#4caf50'; // Green
+        case 'ACCEPTED': return '#b49b57'; // Gold
         case 'PENDING': return '#ff9800'; // Orange
         case 'CANCELLED_BY_SELLER':
         case 'CANCELLED_BY_CUSTOMER':
@@ -34,7 +33,11 @@ const getStatusColor = (status: string) => {
     }
 };
 
-export default async function DashboardPage() {
+export default async function DashboardPage(props: any) {
+    const searchParams = await props.searchParams;
+    const isSuccess = searchParams?.success === 'true';
+    const activeTab = searchParams?.tab === 'past' ? 'past' : 'upcoming';
+
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -42,36 +45,29 @@ export default async function DashboardPage() {
         redirect('/login');
     }
 
-    // Fetch profile data from the new 'profiles' table
     const { data: profile } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
         .single();
 
-    // Fetch subscription data
-    const { data: subscription } = await supabase
-        .from('user_subscriptions')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('status', 'ACTIVE') // Only active subscriptions
-        .single();
-    
-    // Fallback to metadata if profile doesn't exist yet (e.g. legacy user or trigger failure)
-    const { first_name, last_name, phone, role, square_customer_id } = profile || user.user_metadata || {};
+    const { first_name, last_name, square_customer_id } = profile || user.user_metadata || {};
 
-    // Derive Plan Details if subscription exists
-    let planDetails = null;
-    if (subscription && subscription.plan_id) {
-        const allPlans = SUBSCRIPTION_DATA.flatMap(cat => cat.plans.map(p => ({ ...p, categoryLabel: cat.label })));
-        planDetails = allPlans.find(p => p.squarePlanId === subscription.plan_id);
+    let planId = '';
+    let usage: any = null;
+    let subscriptionCreatedDate: Date | null = null;
+
+    if (profile?.stripe_subscription_id) {
+        usage = await getSubscriptionUsage();
+        planId = usage.planId || '';
+        if (usage.subscriptionCreated) {
+            subscriptionCreatedDate = new Date(usage.subscriptionCreated);
+        }
     }
 
-    // AUTO-HEALING: Check and fix mismatch
     let correctCustomerId = null;
     try {
         const { squareClient } = await import("@/lib/square");
-        // Normalize email search
         const searchEmail = (user.email || '').toLowerCase().trim();
         if (searchEmail) {
             const searchRes = await squareClient.customers.search({
@@ -81,20 +77,11 @@ export default async function DashboardPage() {
             
             if (customers.length > 0) {
                 correctCustomerId = customers[0].id;
-                
-                // If mismatch found, fix it in Supabase immediately
                 if (correctCustomerId && square_customer_id !== correctCustomerId) {
-                    console.log(`[Auto-Heal] Fixing mismatch for ${user.email}. DB: ${square_customer_id} -> Square: ${correctCustomerId}`);
-                    const { error: updateError } = await supabase
+                    await supabase
                         .from('profiles')
                         .update({ square_customer_id: correctCustomerId })
                         .eq('id', user.id);
-                    
-                    if (!updateError) {
-                         // Update current page variable for display
-                    } else {
-                        console.error("[Auto-Heal] Failed to update profile:", updateError);
-                    }
                 }
             }
         }
@@ -102,16 +89,13 @@ export default async function DashboardPage() {
         console.error("Auto-heal check failed:", e);
     }
 
-    // FETCH APPOINTMENTS
-    let upcomingBookings = [];
-    let pastBookings = [];
+    let upcomingBookings: any[] = [];
+    let pastBookings: any[] = [];
     
-    // Use the Found ID (if auto-heal found one) or the Linked ID
     const targetSquareId = correctCustomerId || square_customer_id;
 
     if (targetSquareId) {
         try {
-            // @ts-ignore
             const bookings = await listCustomerBookings(targetSquareId);
             const now = new Date();
             
@@ -122,185 +106,220 @@ export default async function DashboardPage() {
         }
     }
 
+    // Determine the list to show based on the active tab
+    const displayBookings = activeTab === 'upcoming' ? upcomingBookings : pastBookings;
+
+    // Formatting plan name for display
+    const planNameMap: Record<string, string> = {
+        'essential-haircut': 'Essential Haircut',
+        'essential-beard': 'Essential Haircut & Beard',
+        'premium-haircut': 'Premium Haircut',
+        'premium-beard': 'Premium Haircut & Beard'
+    };
+    const displayPlanName = planId ? planNameMap[planId] || planId : '';
+
     return (
         <main className={styles.main}>
-            {/* ... (Header remains same) ... */}
+            {/* Using a form action for logout here but it is technically hidden in CSS, 
+                leaving it in case they want a button back in the future */}
             <header className={styles.header}>
                 <h1 className={styles.title}>My Account</h1>
                 <form action={logout}>
-                    <button className={styles.logoutBtn}>
-                        Sign Out
-                    </button>
+                    <button className={styles.logoutBtn}>Sign Out</button>
                 </form>
             </header>
-
-            <Suspense fallback={null}>
-                <SubscriptionSuccess />
-            </Suspense>
 
             <Suspense fallback={null}>
                 <EmailVerificationSuccess />
             </Suspense>
 
+            {isSuccess && (
+                <div style={{ backgroundColor: '#b49b57', color: 'black', padding: '1rem', borderRadius: '8px', marginBottom: '2rem', textAlign: 'center', fontWeight: 'bold' }}>
+                    <p style={{ margin: 0 }}>Payment Successful! Your subscription is active and your credits have been added to your account.</p>
+                </div>
+            )}
+
             <div className={styles.grid}>
-                {/* Profile Section (remains same) */}
-                <div className={`${styles.card} ${styles.profileCard}`}>
-                    <h2 className={styles.welcome}>Welcome, {first_name || 'Guest'}</h2>
-                    
-                    <div className={styles.detailRow}>
-                        <span className={styles.label}>Full Name</span>
-                        <span className={styles.value}>{first_name} {last_name}</span>
-                    </div>
-                    
-                    <div className={styles.detailRow}>
-                        <span className={styles.label}>Email</span>
-                        <span className={styles.value}>{user.email}</span>
-                    </div>
-
-                    <div className={styles.detailRow}>
-                        <span className={styles.label}>Phone</span>
-                        <span className={styles.value}>{phone || 'Not provided'}</span>
+                {/* Left Column */}
+                <div>
+                    {/* Profile Card */}
+                    <div className={`${styles.card} ${styles.profileCard}`}>
+                        <h2 className={styles.profileName}>{first_name} {last_name}</h2>
+                        <p className={styles.profileEmail}>{user.email}</p>
+                        {subscriptionCreatedDate && (
+                            <div className={styles.memberSince}>
+                                <Star size={12} fill="currentColor" />
+                                <span>MEMBER SINCE {subscriptionCreatedDate.getFullYear()}</span>
+                            </div>
+                        )}
                     </div>
 
-                    <div className={styles.detailRow}>
-                        <span className={styles.label}>Square Customer ID</span>
-                        <span className={styles.value} style={{ fontSize: '0.8rem', color: '#666' }}>
-                            {correctCustomerId ? 'Linked & Verified' : (square_customer_id ? 'Linked' : 'Not linked')}
-                        </span>
-                    </div>
+                    {/* Current Plan Card (Only show if active usage) */}
+                    {usage && usage.isActive && planId && (
+                        <div className={styles.planCard}>
+                            <div className={styles.planHeader}>
+                                <div>
+                                    <p className={styles.planLabel}>CURRENT PLAN</p>
+                                    <h3 className={styles.planName}>{displayPlanName}</h3>
+                                </div>
+                                <div className={styles.planIconWrapper}>
+                                    <Star size={16} />
+                                </div>
+                            </div>
 
-                    {/* Debug UI Removed - Auto-Heal is active */}
+                            <div className={styles.creditsText}>
+                                {usage.remainingCredits} <span>/ {usage.maxCredits} credits</span>
+                            </div>
 
-                    {subscription && (
-                         <div className={styles.detailRow} style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #333' }}>
-                            <span className={styles.label}>Membership Credits</span>
-                            <span className={styles.value} style={{ color: 'var(--primary-gold)', fontWeight: 'bold' }}>
-                                {subscription.credits} remaining
-                            </span>
+                            {/* Progress bar logic: Percentage of remaining credits vs total */}
+                            <div className={styles.progressBarContainer}>
+                                <div 
+                                    className={styles.progressBarFill} 
+                                    style={{ width: `${(usage.remainingCredits / usage.maxCredits) * 100}%` }}
+                                ></div>
+                            </div>
+
+                            {usage.resetDate && (
+                                <div className={styles.renewsText}>
+                                    <Clock size={14} />
+                                    <span>Renews on {new Date(usage.resetDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                                </div>
+                            )}
+
+                            {usage.remainingCredits > 0 ? (
+                                <Link href={`/book/subscription?planId=${planId}`} className={styles.btnPrimary}>
+                                    <Scissors size={18} />
+                                    Book with Credit
+                                </Link>
+                            ) : (
+                                <button className={styles.btnPrimary} style={{ opacity: 0.5, cursor: 'not-allowed' }} disabled>
+                                    <Scissors size={18} />
+                                    Out of Credits
+                                </button>
+                            )}
+
+                            <Link href="/book" className={styles.btnSecondary}>
+                                <CreditCard size={18} />
+                                Book Standard
+                            </Link>
+
+                            <form action={logout} style={{ marginTop: '1.5rem' }}>
+                                <button className={styles.btnSecondary} style={{ borderColor: 'transparent', color: '#888' }}>
+                                    Sign Out
+                                </button>
+                            </form>
                         </div>
                     )}
-                    
-                    {role === 'admin' && (
-                        <div className={styles.detailRow}>
-                            <span className={styles.label}>Role</span>
-                            <span className="text-[--primary-gold] font-bold uppercase">{role}</span>
+
+                    {(!usage || !usage.isActive) && (
+                         <div className={styles.card} style={{marginTop: '1rem', textAlign: 'center'}}>
+                            <p style={{color: '#888', marginBottom: '1rem'}}>You do not have an active subscription.</p>
+                            
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                <Link href="/#subscriptions" className={styles.btnPrimary} style={{ backgroundColor: 'var(--primary-gold)', color: '#000' }}>
+                                    <Crown size={18} />
+                                    Buy Subscription
+                                </Link>
+                                <Link href="/book" className={styles.btnSecondary}>
+                                    <CreditCard size={18} />
+                                    Book Standard
+                                </Link>
+                            </div>
+
+                            <form action={logout} style={{ marginTop: '1.5rem' }}>
+                                <button className={styles.btnSecondary} style={{ borderColor: 'transparent', color: '#888' }}>
+                                    Sign Out
+                                </button>
+                            </form>
                         </div>
                     )}
                 </div>
 
-                {/* Appointments / Content Section */}
-                <div className={styles.card}>
-                    <h3 className={styles.sectionTitle}>Upcoming Appointments</h3>
-                    
-                    {upcomingBookings.length > 0 ? (
-                        <div className={styles.bookingsList}>
-                            {upcomingBookings.map((booking: any) => (
-                                <div key={booking.id} style={{ 
-                                    padding: '1rem', 
-                                    border: '1px solid #333', 
-                                    borderRadius: '8px', 
-                                    marginBottom: '1rem',
-                                    background: '#1a1a1a'
-                                }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                                        <span style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
-                                            {new Date(booking.startAt).toLocaleDateString()}
-                                        </span>
-                                        <span style={{ color: 'var(--primary-gold)' }}>
-                                            {new Date(booking.startAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                                        </span>
+                {/* Right Column: Appointments */}
+                <div className={`${styles.card} ${styles.appointmentsCard}`}>
+                    <div className={styles.appointmentsHeaderRow}>
+                        <h2 className={styles.sectionTitle}>Your Appointments</h2>
+                        
+                        <div className={styles.tabs}>
+                            <Link href="?tab=upcoming" className={`${styles.tabBtn} ${activeTab === 'upcoming' ? styles.tabActive : styles.tabInactive}`} scroll={false}>
+                                <CalendarDays size={16} /> Upcoming
+                            </Link>
+                            <Link href="?tab=past" className={`${styles.tabBtn} ${activeTab === 'past' ? styles.tabActive : styles.tabInactive}`} scroll={false}>
+                                <History size={16} /> Past
+                            </Link>
+                        </div>
+                    </div>
+
+                    {displayBookings.length > 0 ? (
+                        <div>
+                            {displayBookings.map((booking: any) => {
+                                const bookingDate = new Date(booking.startAt);
+                                // Determine if this was a credit booking by checking service ID
+                                const isSubscriptionService = ['IG3KC7ZQIDZFPETUY3UWRPTU', '6ZJHSA7CEIIK2MAYR4OBTNUW'].includes(booking.serviceVariationId);
+                                
+                                return (
+                                    <div key={booking.id} className={styles.appointmentCard}>
+                                        <div className={styles.appointmentIconWrapper}>
+                                            <CalendarDays size={20} />
+                                        </div>
+                                        <div className={styles.appointmentContent}>
+                                            <div className={styles.appointmentTitleRow}>
+                                                <h4 className={styles.appointmentService}>
+                                                    {isSubscriptionService ? "Subscription Appointment" : "Standard Appointment"}
+                                                </h4>
+                                                
+                                                {isSubscriptionService && (
+                                                    <span className={styles.creditBadge}>
+                                                        <Star size={10} fill="currentColor" /> CREDIT USED
+                                                    </span>
+                                                )}
+                                                
+                                                {booking.status !== 'ACCEPTED' && booking.status !== 'PENDING' && (
+                                                     <span style={{ fontSize: '0.8rem', color: getStatusColor(booking.status), fontWeight: 'bold' }}>
+                                                        {formatStatus(booking.status)}
+                                                     </span>
+                                                )}
+                                            </div>
+
+                                            <div className={styles.appointmentDetails}>
+                                                <div className={styles.appointmentDetailItem}>
+                                                    <User size={14} />
+                                                    <span>Harry</span> {/* Assuming Harry is the primary barber */}
+                                                </div>
+                                                <div className={styles.appointmentDetailItem}>
+                                                    <Clock size={14} />
+                                                    <span>
+                                                        {bookingDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })} • {bookingDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            {activeTab === 'upcoming' && booking.status === 'ACCEPTED' && (
+                                                <div style={{ marginTop: '0.5rem' }}>
+                                                    <RescheduleLink />
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: '#aaa' }}>
-                                        <span>Status: <span style={{ color: getStatusColor(booking.status), fontWeight: 'bold' }}>{formatStatus(booking.status)}</span></span>
-                                    </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     ) : (
                         <div className={styles.emptyState}>
-                            <p>You have no upcoming appointments.</p>
-                            <Link href="/book" style={{ 
-                                display: 'inline-block', 
-                                marginTop: '1rem', 
-                                color: 'var(--primary-gold)', 
-                                textDecoration: 'underline' 
-                            }}>
-                                Book a haircut now
-                            </Link>
-                            
-                            <p style={{ marginTop: '2rem', fontSize: '0.85rem', color: '#666' }}>
-                                Don't see your booking? {' '}
-                                <Link href="/api/fix-account" style={{ color: '#888', textDecoration: 'underline' }}>
-                                    Find missing appointments
-                                </Link>
-                            </p>
-                        </div>
-                    )}
-
-                    {subscription && subscription.credits > 0 && (
-                        <div style={{ marginTop: '2rem', padding: '1.5rem', background: 'rgba(212, 175, 55, 0.1)', border: '1px solid var(--primary-gold)', borderRadius: '8px' }}>
-                            <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem', color: 'var(--primary-gold)' }}>Member Booking</h3>
-                            
-                            <div style={{ marginBottom: '1.5rem', fontSize: '0.95rem' }}>
-                                {planDetails && (
-                                    <div style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: 'space-between' }}>
-                                        <span style={{ color: '#aaa' }}>Plan:</span>
-                                        <span style={{ fontWeight: 'bold' }}>{planDetails.tier} - {planDetails.categoryLabel}</span>
-                                    </div>
-                                )}
-                                
-                                <div style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: 'space-between' }}>
-                                    <span style={{ color: '#aaa' }}>Status:</span>
-                                    <span style={{ color: '#4caf50', fontWeight: 'bold', textTransform: 'uppercase' }}>{subscription.status}</span>
-                                </div>
-
-                                <div style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: 'space-between' }}>
-                                    <span style={{ color: '#aaa' }}>Credits:</span>
-                                    <span>{subscription.credits} remaining</span>
-                                </div>
-
-                                {subscription.current_period_end && (
-                                    <div style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: 'space-between' }}>
-                                        <span style={{ color: '#aaa' }}>Next Billing:</span>
-                                        <span>{new Date(subscription.current_period_end).toLocaleDateString()}</span>
-                                    </div>
-                                )}
-                            </div>
-
-                            <Link href="/dashboard/book" className={styles.logoutBtn} style={{ background: 'var(--primary-gold)', color: '#000', display: 'inline-block', textDecoration: 'none', textAlign: 'center', width: '100%' }}>
-                                Book with Credits
-                            </Link>
-                        </div>
-                    )}
-
-                    {!subscription && square_customer_id && (
-                        <div style={{ marginTop: '2rem', padding: '1.5rem', border: '1px dashed #444', borderRadius: '8px' }}>
-                             <p style={{ marginBottom: '1rem', fontSize: '0.9rem', color: '#888' }}>
-                                Recently subscribed but don't see it here?
-                             </p>
-                             <SyncSubscriptionButton />
-                        </div>
-                    )}
-
-                    <h3 className={styles.sectionTitle} style={{marginTop: '2rem'}}>Booking History</h3>
-                     {pastBookings.length > 0 ? (
-                        <div className={styles.bookingsList}>
-                            {pastBookings.map((booking: any) => (
-                                <div key={booking.id} style={{ 
-                                    padding: '0.75rem', 
-                                    borderBottom: '1px solid #333', 
-                                    fontSize: '0.9rem',
-                                    color: '#888'
+                            <p>You have no {activeTab} appointments.</p>
+                            {activeTab === 'upcoming' && (
+                                <Link href="/book" style={{ 
+                                    display: 'inline-block', 
+                                    marginTop: '1rem', 
+                                    color: 'var(--primary-gold)', 
+                                    textDecoration: 'none',
+                                    fontWeight: 'bold'
                                 }}>
-                                    <span>{new Date(booking.startAt).toLocaleDateString()}</span> - <span style={{ color: getStatusColor(booking.status) }}>{formatStatus(booking.status)}</span>
-                                </div>
-                            ))}
+                                    Book a haircut now
+                                </Link>
+                            )}
                         </div>
-                     ) : (
-                        <div className={styles.emptyState}>
-                            <p>No past appointments found.</p>
-                        </div>
-                     )}
+                    )}
                 </div>
             </div>
         </main>

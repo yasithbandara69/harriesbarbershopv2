@@ -87,6 +87,33 @@ export default function BookingPage() {
   const [notes, setNotes] = useState('');
   const [bookingResult, setBookingResult] = useState<any>(null);
 
+  // Prefill user Info if logged in
+  useEffect(() => {
+      async function loadUser() {
+          try {
+              const { createClient } = await import("@/utils/supabase/client");
+              const supabase = createClient();
+              const { data: { session } } = await supabase.auth.getSession();
+              
+              if (session && session.user) {
+                  const user = session.user;
+                  const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+                  const meta = profile || user.user_metadata || {};
+                  
+                  setCustomerInfo(prev => ({
+                      givenName: prev.givenName || meta.first_name || '',
+                      familyName: prev.familyName || meta.last_name || '',
+                      emailAddress: prev.emailAddress || user.email || '',
+                      phoneNumber: prev.phoneNumber || meta.phone || ''
+                  }));
+              }
+          } catch(e) {
+              console.error("Failed to load user for prefill", e);
+          }
+      }
+      loadUser();
+  }, []);
+
   // Load Barbers
   useEffect(() => {
     async function loadData() {
