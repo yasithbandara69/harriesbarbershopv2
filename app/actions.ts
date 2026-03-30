@@ -218,15 +218,32 @@ export async function createBooking(
 
         if (!customerId) {
             // Fallback: Create new customer
-            const createRes = await squareClient.customers.create({
-                givenName: customerDetails.givenName,
-                familyName: customerDetails.familyName,
-                emailAddress: customerDetails.emailAddress,
-                phoneNumber: customerDetails.phoneNumber,
-                idempotencyKey: randomUUID() 
-            });
-            const created = createRes.customer || (createRes as any).result?.customer || (createRes as any).body?.customer;
-            customerId = created?.id;
+            try {
+                const createRes = await squareClient.customers.create({
+                    givenName: customerDetails.givenName,
+                    familyName: customerDetails.familyName,
+                    emailAddress: customerDetails.emailAddress,
+                    phoneNumber: customerDetails.phoneNumber,
+                    idempotencyKey: randomUUID() 
+                });
+                const created = createRes.customer || (createRes as any).result?.customer || (createRes as any).body?.customer;
+                customerId = created?.id;
+            } catch (err: any) {
+                const isPhoneError = err.errors?.some((e: any) => e.code === 'INVALID_PHONE_NUMBER') || JSON.stringify(err).includes('INVALID_PHONE_NUMBER');
+                if (isPhoneError) {
+                    console.log("Retrying customer creation without invalid phone number:", customerDetails.phoneNumber);
+                    const retryRes = await squareClient.customers.create({
+                        givenName: customerDetails.givenName,
+                        familyName: customerDetails.familyName,
+                        emailAddress: customerDetails.emailAddress,
+                        idempotencyKey: randomUUID() 
+                    });
+                    const created = retryRes.customer || (retryRes as any).result?.customer || (retryRes as any).body?.customer;
+                    customerId = created?.id;
+                } else {
+                    throw err;
+                }
+            }
         }
 
         if (!customerId) throw new Error("Failed to resolve customer user.");
@@ -418,29 +435,55 @@ export async function createSubscriptionBooking(
     },
     notes?: string
 ) {
-    const usage = await getSubscriptionUsage();
-    
-    if (!usage.isActive || usage.remainingCredits === undefined || usage.remainingCredits <= 0) {
-        const errorMsg = usage.resetDate 
-            ? `Insufficient credits. Your allowance resets on ${new Date(usage.resetDate).toLocaleDateString()}.`
-            : "No valid subscription or out of credits.";
-        throw new Error(errorMsg);
+    console.log("Starting createSubscriptionBooking with:", { serviceId, serviceVersion, staffId, startAt });
+    try {
+        console.log("Fetching subscription usage...");
+        const usage = await getSubscriptionUsage();
+        console.log("Usage result:", usage);
+        
+        if (!usage.isActive || usage.remainingCredits === undefined || usage.remainingCredits <= 0) {
+            const errorMsg = usage.resetDate 
+                ? `Insufficient credits. Your allowance resets on ${new Date(usage.resetDate).toLocaleDateString()}.`
+                : "No valid subscription or out of credits.";
+            throw new Error(errorMsg);
+        }
+
+        console.log("Creating booking in Square...");
+        // Create the booking using the existing action
+        const booking = await createBooking(serviceId, serviceVersion, staffId, startAt, customerDetails, notes);
+        console.log("Square booking successful:", booking?.id);
+
+        console.log("Deducting 1 credit from Supabase...");
+        // Deduct 1 credit from Supabase profile on success
+        const { createClient } = require("@/utils/supabase/server");
+        const supabase = await createClient();
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        
+        if (authError) {
+            console.error("Supabase auth error:", authError);
+            throw new Error("Authentication failed during credit deduction.");
+        }
+
+        if (user && usage.remainingCredits > 0) {
+            const newCredits = usage.remainingCredits - 1;
+            console.log(`Updating user ${user.id} credits to ${newCredits}`);
+            const { error: updateError } = await supabase
+                .from('profiles')
+                .update({ credits: newCredits })
+                .eq('id', user.id);
+            if (updateError) {
+                console.error("Supabase update error:", updateError);
+                throw new Error("Database failed to update credits.");
+            }
+        } else {
+             console.log("Could not find user or remaining credits > 0 during deduction.");
+        }
+
+        console.log("Booking flow complete. Returning.");
+        return booking;
+    } catch (e: any) {
+        console.error("createSubscriptionBooking encountered an error:", e);
+        // Important: throw standard Error so it doesn't cause digest mismatch
+        throw new Error(e.message || "Failed to complete subscription booking");
     }
-
-    // Create the booking using the existing action
-    const booking = await createBooking(serviceId, serviceVersion, staffId, startAt, customerDetails, notes);
-
-    // Deduct 1 credit from Supabase profile on success
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (user && usage.remainingCredits > 0) {
-        const newCredits = usage.remainingCredits - 1;
-        await supabase
-            .from('profiles')
-            .update({ credits: newCredits })
-            .eq('id', user.id);
-    }
-
-    return booking;
 }
