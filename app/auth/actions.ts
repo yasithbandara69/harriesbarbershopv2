@@ -65,15 +65,13 @@ export async function signup(formData: FormData) {
   const lastName = formData.get('lastName') as string;
   const countryCode = formData.get('countryCode') as string;
   const phoneNumber = formData.get('phoneNumber') as string;
-  const planId = formData.get('planId') as string | null;
-
   const sanitizedNumber = phoneNumber.replace(/\D/g, '').replace(/^0/, '');
   const phone = `${countryCode}${sanitizedNumber}`;
 
   // Force logout to clear any stale session/cookies from previous users
   await supabase.auth.signOut();
 
-  const nextUrl = planId ? `/api/checkout/subscription?planId=${planId}` : '/dashboard';
+  const nextUrl = '/dashboard';
   const emailRedirectTo = `${process.env.NEXT_PUBLIC_SITE_URL}/api/auth/callback?next=${encodeURIComponent(nextUrl)}`;
 
   const { error, data } = await supabase.auth.signUp({

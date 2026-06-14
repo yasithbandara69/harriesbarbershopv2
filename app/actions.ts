@@ -38,11 +38,6 @@ export async function listServices(teamMemberId?: string) {
     const result = response as any;
     const items = result.items || [];
     
-    const HIDDEN_SERVICE_IDS = [
-        'IG3KC7ZQIDZFPETUY3UWRPTU', // Subscription Haircut
-        '6ZJHSA7CEIIK2MAYR4OBTNUW'  // Subscription Haircut + beard
-    ];
-
     const services = items.flatMap((item: any) => item.itemData?.variations?.map((variation: any) => {
         // Filter by Team Member if provided
         if (teamMemberId) {
@@ -51,15 +46,16 @@ export async function listServices(teamMemberId?: string) {
                 return null;
             }
         }
-        
-        // Filter out hidden subscription services
-        if (HIDDEN_SERVICE_IDS.includes(variation.id)) {
+
+        const name = item.itemData?.name + (variation.itemVariationData?.name ? ` - ${variation.itemVariationData.name}` : '');
+
+        if (name.toLowerCase().includes('subscription')) {
             return null;
         }
 
         return {
             id: variation.id,
-            name: item.itemData?.name + (variation.itemVariationData?.name ? ` - ${variation.itemVariationData.name}` : ''),
+            name: name,
             price: variation.itemVariationData?.priceMoney,
             duration: variation.itemVariationData?.serviceDuration,
             description: item.itemData?.description,
@@ -318,172 +314,11 @@ export async function listCustomerBookings(customerId: string) {
     } catch (error) {
         console.error("Error listing customer bookings:", error);
         return [];
-    }
-}
-
-export async function getSubscriptionUsage() {
-    const { createClient } = require("@/utils/supabase/server");
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
-        return { isActive: false, error: "Not logged in" };
-    }
-
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-    
-    const stripeSubId = profile?.stripe_subscription_id;
-    let squareCustomerId = profile?.square_customer_id || user.user_metadata?.square_customer_id;
-
-    if (!stripeSubId) {
-        return { isActive: false, error: "No active subscription" };
-    }
-
-    // Auto-heal square_customer_id if missing
-    if (!squareCustomerId && user.email) {
-        const { squareClient } = await import("@/lib/square");
-        const searchRes = await squareClient.customers.search({
-            query: { filter: { emailAddress: { exact: user.email.toLowerCase().trim() } } }
-        });
-        const customers = searchRes.customers || (searchRes as any).result?.customers || [];
-        if (customers.length > 0) {
-            squareCustomerId = customers[0].id;
         }
-    }
-
-    let planId = '';
-    let start = new Date();
-    let end = new Date();
-    let isSubActive = false;
-    let subCreated: number | null = null;
-    let maxCredits = 0;
-
-    try {
-        const Stripe = (await import('stripe')).default;
-        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2026-03-25.dahlia' as any });
-        const sub = await stripe.subscriptions.retrieve(stripeSubId) as any;
-        
-        isSubActive = sub.status === 'active' || sub.status === 'trialing';
-        
-        if (!isSubActive) {
-            return { isActive: false, error: `Subscription is ${sub.status}` };
-        }
-
-        subCreated = sub.created;
-
-        planId = sub.metadata?.planId || '';
-        if (!planId && sub.items?.data?.[0]?.price?.id) {
-            const priceId = sub.items.data[0].price.id;
-            if (priceId === 'price_1TGfDmLJS030B1q4alm4pDpe' || priceId === 'price_1TFFMdLJS030B1q4EdnRb2Yz') planId = 'essential-haircut';
-            else if (priceId === 'price_1TGfCMLJS030B1q41AbO2kwV' || priceId === 'price_1TFFNzLJS030B1q4tZet60XF') planId = 'essential-beard';
-            else if (priceId === 'price_1TFFPdLJS030B1q4pOhImkwQ') planId = 'premium-haircut';
-            else if (priceId === 'price_1TFFRVLJS030B1q4FNqhcnBS') planId = 'premium-beard';
-        }
-
-        maxCredits = planId.includes('premium') ? 4 : 2;
-
-        let startTimestamp = sub.current_period_start || (sub.data && sub.data.current_period_start);
-        let endTimestamp = sub.current_period_end || (sub.data && sub.data.current_period_end);
-
-        if (!startTimestamp || !endTimestamp) {
-            const firstItem = sub.items?.data?.[0];
-            startTimestamp = startTimestamp || firstItem?.current_period_start;
-            endTimestamp = endTimestamp || firstItem?.current_period_end;
-        }
-
-        if (startTimestamp && endTimestamp) {
-            start = new Date(Number(startTimestamp) * 1000);
-            end = new Date(Number(endTimestamp) * 1000);
-        }
-    } catch (e) {
-        console.error("Error fetching stripe sub:", e);
-        return { isActive: false, error: "Failed to fetch subscription details" };
-    }
-
-    const remainingCredits = profile.credits !== null && profile.credits !== undefined ? profile.credits : 0;
-
-    return {
-        isActive: true,
-        planId,
-        maxCredits,
-        remainingCredits,
-        resetDate: end.toISOString(),
-        subscriptionCreated: subCreated ? new Date(subCreated * 1000).toISOString() : null
-    };
 }
 
 export async function getHarryTeamMember() {
     const team = await listTeamMembers();
     const harry = team.find((m: any) => m.name.toLowerCase().includes('harry')) || team[0];
     return harry;
-}
-
-export async function createSubscriptionBooking(
-    serviceId: string,
-    serviceVersion: number,
-    staffId: string,
-    startAt: string,
-    customerDetails: {
-        givenName: string;
-        familyName: string;
-        emailAddress: string;
-        phoneNumber: string;
-    },
-    notes?: string
-) {
-    console.log("Starting createSubscriptionBooking with:", { serviceId, serviceVersion, staffId, startAt });
-    try {
-        console.log("Fetching subscription usage...");
-        const usage = await getSubscriptionUsage();
-        console.log("Usage result:", usage);
-        
-        if (!usage.isActive || usage.remainingCredits === undefined || usage.remainingCredits <= 0) {
-            const errorMsg = usage.resetDate 
-                ? `Insufficient credits. Your allowance resets on ${new Date(usage.resetDate).toLocaleDateString()}.`
-                : "No valid subscription or out of credits.";
-            throw new Error(errorMsg);
-        }
-
-        console.log("Creating booking in Square...");
-        // Create the booking using the existing action
-        const booking = await createBooking(serviceId, serviceVersion, staffId, startAt, customerDetails, notes);
-        console.log("Square booking successful:", booking?.id);
-
-        console.log("Deducting 1 credit from Supabase...");
-        // Deduct 1 credit from Supabase profile on success
-        const { createClient } = require("@/utils/supabase/server");
-        const supabase = await createClient();
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
-        
-        if (authError) {
-            console.error("Supabase auth error:", authError);
-            throw new Error("Authentication failed during credit deduction.");
-        }
-
-        if (user && usage.remainingCredits > 0) {
-            const newCredits = usage.remainingCredits - 1;
-            console.log(`Updating user ${user.id} credits to ${newCredits}`);
-            const { error: updateError } = await supabase
-                .from('profiles')
-                .update({ credits: newCredits })
-                .eq('id', user.id);
-            if (updateError) {
-                console.error("Supabase update error:", updateError);
-                throw new Error("Database failed to update credits.");
-            }
-        } else {
-             console.log("Could not find user or remaining credits > 0 during deduction.");
-        }
-
-        console.log("Booking flow complete. Returning.");
-        return booking;
-    } catch (e: any) {
-        console.error("createSubscriptionBooking encountered an error:", e);
-        // Important: throw standard Error so it doesn't cause digest mismatch
-        throw new Error(e.message || "Failed to complete subscription booking");
-    }
 }

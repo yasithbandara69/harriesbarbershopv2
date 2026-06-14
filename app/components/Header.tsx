@@ -46,7 +46,6 @@ export default function Header() {
         { name: "HOME", href: "/" },
         { name: "ABOUT", href: "/#about" },
         { name: "WORKS", href: "/#works" },
-        { name: "SUBSCRIPTIONS", href: "/#subscriptions" },
     ];
 
     const openLogin = () => {

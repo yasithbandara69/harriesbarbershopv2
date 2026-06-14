@@ -11,18 +11,15 @@ import styles from './Auth.module.css';
 interface SignupFormProps {
     onSuccess?: () => void;
     onSwitchToLogin?: () => void;
-    planId?: string | null;
 }
 
-export default function SignupForm({ onSuccess, onSwitchToLogin, planId: propPlanId }: SignupFormProps) {
+export default function SignupForm({ onSuccess, onSwitchToLogin }: SignupFormProps) {
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState<string | null>(null);
     const [emailToVerify, setEmailToVerify] = useState<string | null>(null);
     
     const router = useRouter();
-    const searchParams = useSearchParams();
-    const planId = propPlanId || searchParams.get('planId');
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -52,13 +49,10 @@ export default function SignupForm({ onSuccess, onSwitchToLogin, planId: propPla
             setEmailToVerify(email);
         } else {
             // Success!
-            if (planId) {
-                // If there's a planId, redirect to the checkout flow
-                window.location.href = `/api/checkout/subscription?planId=${planId}`;
-            } else if (onSuccess) {
+            if (onSuccess) {
                 onSuccess();
             } else {
-                 router.push('/dashboard');
+                    router.push('/dashboard');
             }
         }
     };
@@ -67,7 +61,6 @@ export default function SignupForm({ onSuccess, onSwitchToLogin, planId: propPla
         return (
             <OTPVerifyForm 
                 email={emailToVerify} 
-                planId={planId} 
                 onSuccess={onSuccess} 
                 onCancel={onSwitchToLogin} 
             />
@@ -85,7 +78,7 @@ export default function SignupForm({ onSuccess, onSwitchToLogin, planId: propPla
             )}
             
             <form onSubmit={handleSubmit} className={styles.form}>
-                    {planId && <input type="hidden" name="planId" value={planId} />}
+                    <input type="email" name="email" placeholder="Email Address" required className={styles.input} />
                     <div className={styles.grid}>
                         <div>
                             <label className={styles.label}>First Name</label>

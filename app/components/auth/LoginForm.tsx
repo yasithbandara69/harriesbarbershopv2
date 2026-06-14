@@ -9,16 +9,14 @@ import styles from './Auth.module.css';
 interface LoginFormProps {
     onSuccess?: () => void;
     onSwitchToSignup?: () => void;
-    planId?: string | null;
 }
 
-export default function LoginForm({ onSuccess, onSwitchToSignup, planId: propPlanId }: LoginFormProps) {
+export default function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
     const [loginMethod, setLoginMethod] = useState<'email' | 'phone'>('email');
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const router = useRouter();
     const searchParams = useSearchParams();
-    const planId = propPlanId || searchParams.get('planId');
     const message = searchParams.get('message');
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -31,10 +29,8 @@ export default function LoginForm({ onSuccess, onSwitchToSignup, planId: propPla
         if (result?.error) {
             setError(result.error);
             setLoading(false);
-        } else if (result?.success) {
-             if (planId) {
-                 window.location.href = `/api/checkout/subscription?planId=${planId}`;
-             } else if (onSuccess) {
+        } else {
+             if (onSuccess) {
                  onSuccess();
              } else {
                  router.push('/dashboard');
@@ -76,7 +72,6 @@ export default function LoginForm({ onSuccess, onSwitchToSignup, planId: propPla
             </div>
 
             <form onSubmit={handleSubmit} className={styles.form}>
-                {planId && <input type="hidden" name="planId" value={planId} />}
                 
                 {loginMethod === 'email' ? (
                     <div>
