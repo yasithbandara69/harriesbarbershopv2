@@ -1,6 +1,10 @@
 .carouselSection {
+  position: relative;
+  z-index: 1;
   padding: 6rem 2rem;
-  background: var(--background);
+  background: rgba(17, 17, 17, 0.3);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   display: flex;
   flex-direction: column;
   align-items: center;

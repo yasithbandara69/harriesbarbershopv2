@@ -4,10 +4,12 @@ import SplashScreen from "./components/SplashScreen";
 import AboutUs from "./components/AboutUs";
 import Carousel from "./components/Carousel";
 import GoogleReviews from "./components/GoogleReviews";
+import BackgroundVideo from "./components/BackgroundVideo";
 
 export default function Home() {
   return (
     <main>
+      <BackgroundVideo />
       <SplashScreen />
       <section className={styles.hero}>
         <div className={styles.heroContent}>

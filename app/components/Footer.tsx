@@ -68,11 +68,11 @@ export default function Footer() {
           <ul className={styles.contactList}>
             <li className={styles.contactItem}>
               <MapPin size={18} className={styles.contactIcon} />
-              <span>123 Barber Street, Cityville, ST 12345</span>
+              <span>250 Scoresby Rd, Boronia VIC 3155, Australia</span>
             </li>
             <li className={styles.contactItem}>
               <Phone size={18} className={styles.contactIcon} />
-              <span>(555) 123-4567</span>
+              <span>+61 425 465 557</span>
             </li>
             <li className={styles.contactItem}>
               <Mail size={18} className={styles.contactIcon} />
@@ -81,9 +81,8 @@ export default function Footer() {
             <li className={styles.contactItem}>
               <Clock size={18} className={styles.contactIcon} />
               <div className={styles.hours}>
-                <span>Mon - Fri: 9:00 AM - 7:00 PM</span>
-                <span>Sat: 9:00 AM - 5:00 PM</span>
-                <span>Sun: Closed</span>
+                <span>Wed - Mon: 10 am - 10 pm</span>
+                <span>Tuesday: Closed</span>
               </div>
             </li>
           </ul>

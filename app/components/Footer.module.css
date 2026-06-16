@@ -1,4 +1,6 @@
 .footer {
+  position: relative;
+  z-index: 1;
   background-color: var(--color-dark-800, #121212);
   color: var(--foreground);
   border-top: 1px solid var(--card-border, #333333);
