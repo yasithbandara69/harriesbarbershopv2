@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { listTeamMembers, listServices, searchAvailability, createBooking } from '../actions';
+import { listTeamMembers, listServices, searchAvailability, createBooking, checkCustomerPostcode } from '../actions';
 import styles from './book.module.css';
 import Calendar from './Calendar';
 // Icons needed: ArrowLeft, ChevronDown (for accordion), Info (for policy)
@@ -65,6 +65,8 @@ export default function BookingPage() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showPostcode, setShowPostcode] = useState(false);
+  const [checkingEmail, setCheckingEmail] = useState(false);
 
   // Data
   const [barbers, setBarbers] = useState<TeamMember[]>([]);
@@ -82,7 +84,8 @@ export default function BookingPage() {
     givenName: '',
     familyName: '',
     emailAddress: '',
-    phoneNumber: ''
+    phoneNumber: '',
+    postcode: ''
   });
   const [notes, setNotes] = useState('');
   const [bookingResult, setBookingResult] = useState<any>(null);
@@ -104,7 +107,8 @@ export default function BookingPage() {
                       givenName: prev.givenName || meta.first_name || '',
                       familyName: prev.familyName || meta.last_name || '',
                       emailAddress: prev.emailAddress || user.email || '',
-                      phoneNumber: prev.phoneNumber || meta.phone || ''
+                      phoneNumber: prev.phoneNumber || meta.phone || '',
+                      postcode: prev.postcode || ''
                   }));
               }
           } catch(e) {
@@ -212,6 +216,19 @@ export default function BookingPage() {
     } finally {
         setLoading(false);
     }
+  };
+
+  const handleEmailBlur = async () => {
+      if (!customerInfo.emailAddress) return;
+      setCheckingEmail(true);
+      try {
+          const hasPostcode = await checkCustomerPostcode(customerInfo.emailAddress);
+          setShowPostcode(!hasPostcode);
+      } catch (e) {
+          setShowPostcode(true);
+      } finally {
+          setCheckingEmail(false);
+      }
   };
 
   // Format Helpers
@@ -447,13 +464,21 @@ export default function BookingPage() {
                                 placeholder="john.smith@example.com" 
                                 value={customerInfo.emailAddress} 
                                 onChange={e => setCustomerInfo({...customerInfo, emailAddress: e.target.value})} 
+                                onBlur={handleEmailBlur}
                             />
+                            {checkingEmail && <p style={{ fontSize: '0.75rem', color: '#a3a3a3', marginTop: '0.375rem' }}>Checking details...</p>}
                         </div>
                         <div className={styles.formItem}>
                             <label className={styles.formLabel}>Phone Number</label>
                             <input className={styles.input} placeholder="+61..." value={customerInfo.phoneNumber} onChange={e => setCustomerInfo({...customerInfo, phoneNumber: e.target.value})} />
                             <p style={{ fontSize: '0.75rem', color: '#a3a3a3', marginTop: '0.375rem' }}>You'll receive appointment confirmations via SMS</p>
                         </div>
+                        {showPostcode && (
+                            <div className={styles.formItem}>
+                                <label className={styles.formLabel}>Postcode</label>
+                                <input className={styles.input} placeholder="e.g. 2000" value={customerInfo.postcode} onChange={e => setCustomerInfo({...customerInfo, postcode: e.target.value})} />
+                            </div>
+                        )}
                         <div className={styles.formItem}>
                             <label className={styles.formLabel}>Notes (Optional)</label>
                             <textarea className={styles.textarea} placeholder="Any special requests..." value={notes} onChange={e => setNotes(e.target.value)} />

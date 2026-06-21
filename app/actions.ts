@@ -1,7 +1,7 @@
 'use server';
 
 import { squareClient, locationId } from "@/lib/square";
-import { createClient } from "@/utils/supabase/server";
+import { createClient, createAdminClient } from "@/utils/supabase/server";
 import { SearchAvailabilityRequest, CreateBookingRequest } from "square";
 import { randomUUID } from "crypto";
 
@@ -180,12 +180,26 @@ export async function createBooking(
         familyName: string;
         emailAddress: string;
         phoneNumber: string;
+        postcode?: string;
     },
     customerNote?: string
 ) {
     if (!locationId) throw new Error("Location ID not set");
 
     try {
+        // Save postcode to Supabase if provided
+        if (customerDetails.postcode) {
+            try {
+                const adminClient = createAdminClient();
+                await adminClient.from('customer_postcodes').upsert({
+                    email: customerDetails.emailAddress.toLowerCase().trim(),
+                    postcode: customerDetails.postcode
+                });
+            } catch (e) {
+                console.error("Failed to save postcode to Supabase", e);
+            }
+        }
+
         // 1. Resolve Customer (Use existing Square ID if linked, otherwise search/create)
         // Check for logged-in user context
         let customerId: string | undefined;
@@ -321,4 +335,23 @@ export async function getHarryTeamMember() {
     const team = await listTeamMembers();
     const harry = team.find((m: any) => m.name.toLowerCase().includes('harry')) || team[0];
     return harry;
+}
+
+// NEW: Check if customer exists by email and has a postcode
+export async function checkCustomerPostcode(emailAddress: string): Promise<boolean> {
+    if (!emailAddress) return false;
+    try {
+        const searchEmail = emailAddress.toLowerCase().trim();
+        const adminClient = createAdminClient();
+        const { data } = await adminClient
+            .from('customer_postcodes')
+            .select('postcode')
+            .eq('email', searchEmail)
+            .single();
+            
+        return !!data?.postcode;
+    } catch (error) {
+        console.error("Error checking customer postcode in Supabase:", error);
+        return false;
+    }
 }
