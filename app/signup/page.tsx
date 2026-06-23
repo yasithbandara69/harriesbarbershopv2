@@ -1,8 +1,6 @@
 'use client';
 
 import SignupForm from '@/app/components/auth/SignupForm';
-import Link from 'next/link';
-
 import { Suspense } from 'react';
 
 import styles from '../login/Login.module.css';

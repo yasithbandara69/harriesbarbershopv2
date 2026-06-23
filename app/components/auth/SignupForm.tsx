@@ -3,7 +3,7 @@
 
 import { signup } from '@/app/auth/actions';
 import { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import OTPVerifyForm from './OTPVerifyForm';
 
 import styles from './Auth.module.css';
