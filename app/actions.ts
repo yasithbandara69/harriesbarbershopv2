@@ -53,13 +53,33 @@ export async function listServices(teamMemberId?: string) {
             return null;
         }
 
+        let hasTrueAttribute = false;
+        try {
+            const allAttrs = [
+                ...(Object.values(item.itemData?.customAttributeValues || {})),
+                ...(Object.values(item.customAttributeValues || {})),
+                ...(Object.values(variation.itemVariationData?.customAttributeValues || {})),
+                ...(Object.values(variation.customAttributeValues || {}))
+            ];
+            hasTrueAttribute = allAttrs.some((attr: any) => 
+                attr.booleanValue === true || 
+                attr.boolean_value === true || 
+                attr.stringValue === "true" || 
+                attr.string_value === "true" ||
+                (attr.name && attr.name.includes("Add-on"))
+            );
+        } catch(e) {}
+
+        const isAddon = hasTrueAttribute || name.toLowerCase().includes('hot towel') || name.toLowerCase().includes('add-on');
+
         return {
             id: variation.id,
             name: name,
             price: variation.itemVariationData?.priceMoney,
             duration: variation.itemVariationData?.serviceDuration,
             description: item.itemData?.description,
-            version: variation.version
+            version: variation.version,
+            isAddon: isAddon
         };
     })).filter(Boolean);
 
@@ -132,7 +152,7 @@ export async function getServiceById(serviceId: string) {
     }
 }
 
-export async function searchAvailability(startAt: string, endAt: string, serviceId: string, staffId?: string) {
+export async function searchAvailability(startAt: string, endAt: string, serviceIds: string[], staffId?: string) {
     if (!locationId) throw new Error("Location ID not set");
 
     const query: SearchAvailabilityRequest = {
@@ -143,14 +163,12 @@ export async function searchAvailability(startAt: string, endAt: string, service
                     endAt: endAt
                 },
                 locationId,
-                segmentFilters: [
-                    {
-                        serviceVariationId: serviceId,
-                        teamMemberIdFilter: {
-                            any: staffId ? [staffId] : undefined
-                        }
+                segmentFilters: serviceIds.map(id => ({
+                    serviceVariationId: id,
+                    teamMemberIdFilter: {
+                        any: staffId ? [staffId] : undefined
                     }
-                ]
+                }))
             }
         }
     };
@@ -171,8 +189,7 @@ export async function searchAvailability(startAt: string, endAt: string, service
 
 // RESTORED: Create Booking function
 export async function createBooking(
-    serviceId: string,
-    serviceVersion: number,
+    services: { id: string; version: number }[],
     staffId: string,
     startAt: string,
     customerDetails: {
@@ -265,13 +282,11 @@ export async function createBooking(
                 locationId,
                 startAt,
                 customerNote,
-                appointmentSegments: [
-                    {
-                        teamMemberId: staffId,
-                        serviceVariationId: serviceId,
-                        serviceVariationVersion: BigInt(serviceVersion),
-                    }
-                ]
+                appointmentSegments: services.map(svc => ({
+                    teamMemberId: staffId,
+                    serviceVariationId: svc.id,
+                    serviceVariationVersion: BigInt(svc.version),
+                }))
             },
             idempotencyKey: randomUUID()
         };

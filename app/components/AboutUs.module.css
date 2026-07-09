@@ -2,171 +2,138 @@
   position: relative;
   z-index: 1;
   width: 100%;
-  background-color: #000;
+  background-color: #0d0d0d;
   display: flex;
   justify-content: center;
+  padding: 6rem 1.5rem;
 }
 
 .container {
-  padding: 4rem 1.5rem;
   color: #fff;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3rem;
   width: 100%;
-  max-width: 1200px; /* Tighter container for better readability */
+  max-width: 1000px;
   margin: 0 auto;
+}
+
+.headerSection {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.mainTitle {
+  font-family: var(--font-oswald), sans-serif;
+  font-size: 3rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--primary-gold);
+  margin-bottom: 1rem;
+}
+
+.mainSubtitle {
+  font-family: var(--font-inter), sans-serif;
+  font-size: 1rem;
+  color: #a3a3a3;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.teamGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 4rem;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .teamGrid {
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+  }
+}
+
+.teamCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background-color: #141414;
+  border: 1px solid #2e2e2e;
+  border-radius: 1.5rem;
+  padding: 2rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.teamCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.5), 0 0 15px rgba(212, 175, 55, 0.1);
 }
 
 .imageContainer {
   position: relative;
   width: 100%;
-  max-width: 400px;
+  max-width: 280px;
   aspect-ratio: 3/4;
-  border-radius: 1.5rem;
+  border-radius: 1rem;
   overflow: hidden;
-  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5), 0 0 15px rgba(212, 175, 55, 0.15); /* Soft depth + Gold glow */
-  border: 1px solid rgba(212, 175, 55, 0.4); /* Golden glass border */
-  transition: transform 0.4s ease, box-shadow 0.4s ease;
-}
-
-.imageContainer:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.6), 0 0 20px rgba(212, 175, 55, 0.1); /* Elevated glow */
+  margin-bottom: 2rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
 }
 
 .image {
   object-fit: cover;
-  transition: transform 0.7s ease;
+  transition: transform 0.5s ease;
 }
 
-.sectionWrapper:hover .image {
-  transform: scale(1.03);
+.teamCard:hover .image {
+  transform: scale(1.05);
 }
 
-.contentWrapper {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 2.5rem;
-  text-align: center;
-}
-
-/* Typography Improvements */
-.title {
-  font-family: var(--font-oswald), sans-serif;
-  font-size: 3rem;
-  font-weight: 700;
-  line-height: 1;
-  margin-bottom: 1.5rem;
-  text-transform: uppercase;
-  color: #fff;
-}
-
-.nameHighlight {
-  color: var(--primary-gold);
-  display: block;
-  font-size: 1.25em; /* 25% larger than the "Hey I'm" part */
-}
-
-.description {
-  font-family: var(--font-inter), sans-serif;
-  font-size: 1rem;
-  line-height: 1.7;
-  font-weight: 300; /* Lighter weight for clean look */
-  color: #d1d1d1;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-/* Stats Styling */
-.statsGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  row-gap: 2.5rem;
-  column-gap: 1.5rem;
-  width: 100%;
-  padding-top: 2rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1); /* Very subtle border */
-}
-
-.statItem {
+.teamContent {
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-align: center;
 }
 
-.statNumber {
+.teamName {
   font-family: var(--font-oswald), sans-serif;
-  font-size: 2.5rem;
+  font-size: 2rem;
   font-weight: 600;
-  color: var(--primary-gold);
-  line-height: 1;
-  margin-bottom: 0.25rem;
+  color: #fff;
+  margin-bottom: 0.5rem;
 }
 
-.statLabel {
+.teamTitle {
   font-family: var(--font-inter), sans-serif;
-  font-size: 0.75rem;
-  color: #999;
+  font-size: 0.875rem;
+  color: var(--primary-gold);
   text-transform: uppercase;
-  letter-spacing: 0.15em;
+  letter-spacing: 0.05em;
   font-weight: 500;
+  margin-bottom: 1.25rem;
 }
 
-/* Desktop Styles */
-@media (min-width: 1024px) {
-  .sectionWrapper {
-    /* Ensure background extends full width */
-  }
+.teamDescription {
+  font-family: var(--font-inter), sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #d1d1d1;
+  margin-bottom: 1.5rem;
+}
 
-  .container {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between; /* Spread image and text */
-    padding: 8rem 2rem;
-    gap: 6rem;
-  }
+.instagramLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-inter), sans-serif;
+  font-size: 0.875rem;
+  color: #a3a3a3;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
 
-  .imageContainer {
-    width: 40%;
-    max-width: 420px;
-    flex-shrink: 0;
-    /* Shadow and border already handled in base class, just override size if needed */
-  }
-
-  .contentWrapper {
-    width: 55%;
-    align-items: flex-start;
-    text-align: left;
-    gap: 3rem;
-  }
-
-  .description {
-    margin: 0;
-    font-size: 1.05rem;
-  }
-  
-  .title {
-    font-size: 3.5rem;
-    margin-bottom: 1rem;
-  }
-  
-  .nameHighlight {
-    display: block;
-    margin-top: 0.25rem;
-  }
-
-  .statsGrid {
-    grid-template-columns: repeat(4, 1fr);
-    gap: 2rem;
-    padding-top: 3rem;
-  }
-
-  .statItem {
-    align-items: flex-start;
-    text-align: left;
-  }
+.instagramLink:hover {
+  color: var(--primary-gold);
 }

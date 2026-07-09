@@ -20,6 +20,7 @@ interface Service {
   price: { amount: string; currency: string };
   duration: string; // ms
   version: number;
+  isAddon?: boolean;
 }
 
 interface Availability {
@@ -78,6 +79,7 @@ export default function BookingPage() {
   const [expandedBarberId, setExpandedBarberId] = useState<string | null>(null);
   const [selectedBarber, setSelectedBarber] = useState<TeamMember | null>(null);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
+  const [selectedAddonService, setSelectedAddonService] = useState<Service | null>(null);
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [customerInfo, setCustomerInfo] = useState({
@@ -159,7 +161,16 @@ export default function BookingPage() {
   const handleServiceSelect = (barber: TeamMember, service: Service) => {
       setSelectedBarber(barber);
       setSelectedService(service);
-      setStep(2);
+      setSelectedAddonService(null);
+      
+      const isBeardService = service.name.toLowerCase().includes('beard');
+      const hasAddons = (servicesByBarber[barber.id] || []).some(s => s.isAddon);
+
+      if (isBeardService && hasAddons) {
+          setStep(1.5);
+      } else {
+          setStep(2);
+      }
   };
 
   // Fetch Availability
@@ -169,7 +180,10 @@ export default function BookingPage() {
         const start = new Date(`${selectedDate}T00:00:00`); 
         const end = new Date(`${selectedDate}T23:59:59`);
         
-        searchAvailability(start.toISOString(), end.toISOString(), selectedService.id, selectedBarber.id)
+        const serviceIds = [selectedService.id];
+        if (selectedAddonService) serviceIds.push(selectedAddonService.id);
+
+        searchAvailability(start.toISOString(), end.toISOString(), serviceIds, selectedBarber.id)
             .then(data => {
                 // @ts-ignore
                 setAvailabilities(data);
@@ -180,7 +194,7 @@ export default function BookingPage() {
                 setLoading(false);
             });
     }
-  }, [selectedDate, selectedService, selectedBarber]);
+  }, [selectedDate, selectedService, selectedAddonService, selectedBarber]);
 
   const handleBook = async () => {
     if (!selectedService || !selectedBarber || !selectedTime) return;
@@ -201,9 +215,15 @@ export default function BookingPage() {
 
     setLoading(true);
     try {
+        const servicesToBook = [
+            { id: selectedService.id, version: selectedService.version }
+        ];
+        if (selectedAddonService) {
+            servicesToBook.push({ id: selectedAddonService.id, version: selectedAddonService.version });
+        }
+
         const result = await createBooking(
-            selectedService.id,
-            selectedService.version,
+            servicesToBook,
             selectedBarber.id,
             selectedTime,
             customerInfo,
@@ -257,7 +277,7 @@ export default function BookingPage() {
             </div>
             <div className={styles.cardContent} style={{ textAlign: 'center' }}>
                 <p style={{ marginBottom: '1rem', color: '#a3a3a3' }}>
-                    You are booked with {selectedBarber?.name} for {selectedService?.name}.
+                    You are booked with {selectedBarber?.name} for {selectedService?.name}{selectedAddonService ? ` and ${selectedAddonService.name}` : ''}.
                 </p>
                 <p style={{ fontSize: '1.25rem', color: '#fff', marginBottom: '1rem' }}>
                     {new Date(selectedDate).toLocaleDateString()} at {new Date(selectedTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
@@ -269,7 +289,15 @@ export default function BookingPage() {
         <>
             {/* Contextual Back Button */}
             {step > 1 && (
-                <button className={styles.ghostBtn} onClick={() => setStep(step - 1)}>
+                <button className={styles.ghostBtn} onClick={() => {
+                    if (step === 2 && selectedService?.name.toLowerCase().includes('beard') && (servicesByBarber[selectedBarber?.id || ''] || []).some(s => s.isAddon)) {
+                        setStep(1.5);
+                    } else if (step === 1.5) {
+                        setStep(1);
+                    } else {
+                        setStep(step - 1);
+                    }
+                }}>
                     <span style={{ marginRight: '0.5rem', display: 'flex' }}><Icons.ArrowLeft /></span>
                     Back
                 </button>
@@ -279,11 +307,13 @@ export default function BookingPage() {
             <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
                 <h1 className={styles.headerTitle}>
                     {step === 1 && "Book Your Appointment"}
+                    {step === 1.5 && "Enhance Your Visit"}
                     {step === 2 && "Select Date & Time"}
                     {step === 3 && "Confirm Your Booking"}
                 </h1>
                 <p className={styles.headerSubtitle}>
                     {step === 1 && "Select your preferred barber and service to get started"}
+                    {step === 1.5 && "Add an extra touch to your beard service"}
                     {step === 2 && "Choose your preferred appointment date"}
                     {step === 3 && "Review your appointment details and enter your contact information"}
                 </p>
@@ -321,7 +351,7 @@ export default function BookingPage() {
                                         <div style={{ padding: '0.5rem 0', fontWeight: '500', fontSize: '0.875rem' }}>
                                             Book Now ({isLoadingSvc ? "Loading..." : `${services.length} services`})
                                         </div>
-                                        {services.map(svc => (
+                                        {services.filter(s => !s.isAddon).map(svc => (
                                             <div key={svc.id} className={styles.serviceItem}>
                                                 <div className={styles.serviceInfo}>
                                                     <p className={styles.serviceName}>{svc.name}</p>
@@ -345,13 +375,63 @@ export default function BookingPage() {
                 </div>
             )}
 
+            {/* STEP 1.5: CROSS-SELL */}
+            {step === 1.5 && selectedBarber && (
+                <div className={styles.stack}>
+                     <div className={styles.card}>
+                        <div className={styles.cardHeader}>
+                            <h3 className={styles.cardTitle}>Would you like to add anything?</h3>
+                        </div>
+                        <div className={styles.cardContent}>
+                            {(servicesByBarber[selectedBarber.id] || []).filter(s => s.isAddon).map(svc => (
+                                <div key={svc.id} className={styles.serviceItem} style={{ flexDirection: 'column', alignItems: 'stretch', padding: '0', overflow: 'hidden' }}>
+                                    {svc.name.toLowerCase().includes('hot towel') && (
+                                        <div style={{ width: '100%', backgroundColor: '#1a1a1a', display: 'flex', justifyContent: 'center' }}>
+                                            <img 
+                                                src="/hot towel shave.jpeg" 
+                                                alt={svc.name} 
+                                                style={{ width: '100%', height: 'auto', objectFit: 'contain', maxHeight: '400px' }} 
+                                            />
+                                        </div>
+                                    )}
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1.25rem', flexWrap: 'wrap', gap: '1rem' }}>
+                                        <div className={styles.serviceInfo} style={{ flex: '1 1 200px' }}>
+                                            <p className={styles.serviceName} style={{ fontSize: '1.125rem', marginBottom: '0.25rem' }}>{svc.name}</p>
+                                            <p className={styles.serviceMeta}>{svc.description}</p>
+                                            <p className={styles.serviceMeta}>+ {formatDuration(svc.duration)}</p>
+                                        </div>
+                                        <div className={styles.servicePriceBlock} style={{ margin: 0, alignItems: 'center', flexDirection: 'row', gap: '1.5rem' }}>
+                                            <span className={styles.priceTag}>+{formatPrice(svc.price.amount)}</span>
+                                            <button className={styles.selectBtn} onClick={() => {
+                                                setSelectedAddonService(svc);
+                                                setStep(2);
+                                            }}>Add</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                            <div style={{ marginTop: '1rem', textAlign: 'center' }}>
+                                <button className={styles.ghostBtn} onClick={() => {
+                                    setSelectedAddonService(null);
+                                    setStep(2);
+                                }}>No thanks, skip</button>
+                            </div>
+                        </div>
+                     </div>
+                </div>
+            )}
+
             {/* STEP 2: DATE & TIME (Matches DateTimePicker) */}
             {step === 2 && (
                 <div className={styles.stack}>
                     {/* Selected Summary Alert */}
                     <div className={styles.alert}>
                         <div className={styles.alertDescription}>
-                            <strong>Selected:</strong> {selectedService?.name} with {selectedBarber?.name} ({selectedService && formatPrice(selectedService.price.amount)})
+                            <strong>Selected:</strong> {selectedService?.name} 
+                            {selectedAddonService ? ` + ${selectedAddonService.name}` : ''} with {selectedBarber?.name} 
+                            ({selectedService && formatPrice(
+                                (Number(selectedService.price.amount) + (selectedAddonService ? Number(selectedAddonService.price.amount) : 0)).toString()
+                            )})
                         </div>
                     </div>
 
@@ -414,19 +494,39 @@ export default function BookingPage() {
                                 </div>
                                 <div className={styles.summaryRow}>
                                     <span className={styles.summaryLabel}>Service:</span>
-                                    <span className={styles.summaryValue}>{selectedService?.name}</span>
+                                    <div className={styles.summaryValue} style={{ textAlign: 'right' }}>
+                                        <div>{selectedService?.name}</div>
+                                        <div style={{ fontSize: '0.875rem', color: '#a3a3a3', marginTop: '0.25rem' }}>
+                                            {selectedService && formatPrice(selectedService.price.amount)}
+                                        </div>
+                                    </div>
                                 </div>
+                                {selectedAddonService && (
+                                    <div className={styles.summaryRow}>
+                                        <span className={styles.summaryLabel}>Add-on:</span>
+                                        <div className={styles.summaryValue} style={{ textAlign: 'right' }}>
+                                            <div>{selectedAddonService.name}</div>
+                                            <div style={{ fontSize: '0.875rem', color: '#a3a3a3', marginTop: '0.25rem' }}>
+                                                {formatPrice(selectedAddonService.price.amount)}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                                 <div className={styles.summaryRow}>
                                     <span className={styles.summaryLabel}>Date:</span>
                                     <span className={styles.summaryValue}>{selectedDate}</span>
                                 </div>
                                 <div className={styles.summaryRow}>
                                     <span className={styles.summaryLabel}>Time:</span>
-                                    <span className={styles.summaryValue}>{selectedTime && new Date(selectedTime).toLocaleTimeString()}</span>
+                                    <span className={styles.summaryValue}>{selectedTime && new Date(selectedTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                                 </div>
                                 <div className={styles.summaryTotal}>
                                     <span className={styles.summaryTotalLabel}>Total:</span>
-                                    <span className={styles.summaryTotalValue}>{selectedService && formatPrice(selectedService.price.amount)}</span>
+                                    <span className={styles.summaryTotalValue}>
+                                        {selectedService && formatPrice(
+                                            (Number(selectedService.price.amount) + (selectedAddonService ? Number(selectedAddonService.price.amount) : 0)).toString()
+                                        )}
+                                    </span>
                                 </div>
                             </div>
                         </div>
