@@ -6,6 +6,7 @@ import styles from "./dashboard.module.css";
 import Link from "next/link";
 import { Suspense } from "react";
 import EmailVerificationSuccess from "../components/EmailVerificationSuccess";
+import StripeSuccessModal from "../components/StripeSuccessModal";
 import RescheduleLink from "../components/RescheduleLink";
 import { CalendarDays, Clock, History, User } from "lucide-react";
 
@@ -50,7 +51,7 @@ export default async function DashboardPage(props: any) {
         .eq('id', user.id)
         .single();
 
-    const { first_name, last_name, square_customer_id } = profile || user.user_metadata || {};
+    const { first_name, last_name, square_customer_id, subscription_tier, haircut_credits, beard_credits } = profile || user.user_metadata || {};
 
     let correctCustomerId = null;
     try {
@@ -106,6 +107,7 @@ export default async function DashboardPage(props: any) {
 
             <Suspense fallback={null}>
                 <EmailVerificationSuccess />
+                <StripeSuccessModal sessionId={searchParams?.session_id} />
             </Suspense>
 
             <div className={styles.grid}>
@@ -119,6 +121,48 @@ export default async function DashboardPage(props: any) {
                             </button>
                         </form>
                     </div>
+                    
+                    {subscription_tier && (
+                        <div className={styles.card} style={{ marginTop: '2rem', position: 'relative', overflow: 'hidden' }}>
+                            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: 'linear-gradient(90deg, var(--primary-gold), transparent)' }} />
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
+                                <div>
+                                    <h2 style={{ fontSize: '1.125rem', fontWeight: 600, color: '#fff', marginBottom: '0.25rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Loyalty Membership</h2>
+                                    <p style={{ color: 'var(--primary-gold)', fontSize: '0.875rem' }}>{subscription_tier} Plan</p>
+                                </div>
+                            </div>
+                            
+                            <div style={{ display: 'flex', gap: '2rem', marginBottom: '1.5rem', padding: '1rem', background: '#141414', borderRadius: '0.5rem' }}>
+                                <div>
+                                    <div style={{ fontSize: '2rem', fontFamily: 'var(--font-oswald)', color: '#fff', fontWeight: 700, lineHeight: 1 }}>{haircut_credits || 0}</div>
+                                    <div style={{ fontSize: '0.75rem', color: '#888', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '0.5rem' }}>Haircut Credits</div>
+                                </div>
+                                {subscription_tier.includes('Beard') && (
+                                    <div>
+                                        <div style={{ fontSize: '2rem', fontFamily: 'var(--font-oswald)', color: '#fff', fontWeight: 700, lineHeight: 1 }}>{beard_credits || 0}</div>
+                                        <div style={{ fontSize: '0.75rem', color: '#888', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '0.5rem' }}>Beard Credits</div>
+                                    </div>
+                                )}
+                            </div>
+                            
+                            {((haircut_credits || 0) > 0 || (beard_credits || 0) > 0) && (
+                                <Link href="/book/member" style={{
+                                    display: 'block',
+                                    textAlign: 'center',
+                                    padding: '0.75rem',
+                                    backgroundColor: 'transparent',
+                                    color: 'var(--primary-gold)',
+                                    fontWeight: 600,
+                                    borderRadius: '0.5rem',
+                                    textDecoration: 'none',
+                                    border: '1px solid var(--primary-gold)',
+                                    transition: 'all 0.2s'
+                                }}>
+                                    Book Included Appointment
+                                </Link>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 <div className={`${styles.card} ${styles.appointmentsCard}`}>
@@ -148,7 +192,12 @@ export default async function DashboardPage(props: any) {
                                         <div className={styles.appointmentContent}>
                                             <div className={styles.appointmentTitleRow}>
                                                 <h4 className={styles.appointmentService}>
-                                                    Standard Appointment
+                                                    {
+                                                        booking.serviceVariationId === process.env.NEXT_PUBLIC_SQUARE_MEMBER_HAIRCUT_ID || 
+                                                        booking.serviceVariationId === process.env.NEXT_PUBLIC_SQUARE_MEMBER_BEARD_ID 
+                                                            ? 'Membership Appointment' 
+                                                            : 'Standard Appointment'
+                                                    }
                                                 </h4>
                                                 
                                                 {booking.status !== 'ACCEPTED' && booking.status !== 'PENDING' && (

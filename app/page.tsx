@@ -2,6 +2,7 @@ import Link from "next/link";
 import styles from "./page.module.css";
 import SplashScreen from "./components/SplashScreen";
 import AboutUs from "./components/AboutUs";
+import Memberships from "./components/Memberships";
 import Carousel from "./components/Carousel";
 import GoogleReviews from "./components/GoogleReviews";
 import BackgroundVideo from "./components/BackgroundVideo";
@@ -28,6 +29,7 @@ export default function Home() {
         </div>
       </section>
       <AboutUs />
+      <Memberships />
       <Carousel />
       <GoogleReviews />
     </main>

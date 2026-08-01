@@ -370,3 +370,36 @@ export async function checkCustomerPostcode(emailAddress: string): Promise<boole
         return false;
     }
 }
+
+export async function createMemberBooking(
+    service: { id: string, version: number },
+    staffId: string,
+    startAt: string,
+    customerDetails: any,
+    customerNote: string,
+    tier: string
+) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+        throw new Error("You must be logged in to book a member appointment.");
+    }
+
+    // Call normal booking
+    const result = await createBooking([service], staffId, startAt, customerDetails, customerNote);
+
+    // Deduct credit
+    const adminClient = createAdminClient();
+    const { data: profile } = await adminClient.from('profiles').select('*').eq('id', user.id).single();
+
+    if (profile) {
+        if (tier.includes('Beard') && profile.beard_credits > 0) {
+            await adminClient.from('profiles').update({ beard_credits: profile.beard_credits - 1 }).eq('id', user.id);
+        } else if (profile.haircut_credits > 0) {
+            await adminClient.from('profiles').update({ haircut_credits: profile.haircut_credits - 1 }).eq('id', user.id);
+        }
+    }
+
+    return result;
+}

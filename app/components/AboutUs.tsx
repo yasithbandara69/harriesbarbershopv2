@@ -8,7 +8,7 @@ export default function AboutUs() {
       title: "Founder & Owner | Experienced Barber",
       description: "Founder and owner of Harries Barbershop. With years of experience, Harry is dedicated to providing the best cuts in town with a personalized touch.",
       instagram: "harries_barbershop",
-      image: "/harry-2.jpg"
+      image: "/barbers/Harry.jpg"
     },
     {
       name: "Kavish",

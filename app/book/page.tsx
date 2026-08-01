@@ -351,7 +351,7 @@ export default function BookingPage() {
                                         <div style={{ padding: '0.5rem 0', fontWeight: '500', fontSize: '0.875rem' }}>
                                             Book Now ({isLoadingSvc ? "Loading..." : `${services.length} services`})
                                         </div>
-                                        {services.filter(s => !s.isAddon).map(svc => (
+                                        {services.filter(s => !s.isAddon && !s.name.toLowerCase().includes('member')).map(svc => (
                                             <div key={svc.id} className={styles.serviceItem}>
                                                 <div className={styles.serviceInfo}>
                                                     <p className={styles.serviceName}>{svc.name}</p>
