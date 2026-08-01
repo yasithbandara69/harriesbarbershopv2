@@ -78,7 +78,7 @@ export default function SignupForm({ onSuccess, onSwitchToLogin }: SignupFormPro
             )}
             
             <form onSubmit={handleSubmit} className={styles.form}>
-                    <input type="email" name="email" placeholder="Email Address" required className={styles.input} />
+
                     <div className={styles.grid}>
                         <div>
                             <label className={styles.label}>First Name</label>
