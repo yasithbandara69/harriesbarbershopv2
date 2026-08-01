@@ -48,7 +48,6 @@ export async function POST(req: Request) {
                     haircutCredits = 4;
                 } else if (priceId === process.env.NEXT_PUBLIC_STRIPE_PRICE_HAIRCUT_BEARD) {
                     tier = 'Haircut + Beard';
-                    haircutCredits = 4;
                     beardCredits = 4; 
                 }
 
@@ -76,7 +75,6 @@ export async function POST(req: Request) {
                      if (priceId === process.env.NEXT_PUBLIC_STRIPE_PRICE_HAIRCUT) {
                          haircutCredits = 4;
                      } else if (priceId === process.env.NEXT_PUBLIC_STRIPE_PRICE_HAIRCUT_BEARD) {
-                         haircutCredits = 4; 
                          beardCredits = 4;
                      }
 

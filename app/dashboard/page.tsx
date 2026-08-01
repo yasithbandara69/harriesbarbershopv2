@@ -134,15 +134,13 @@ export default async function DashboardPage(props: any) {
                             
                             <div style={{ display: 'flex', gap: '2rem', marginBottom: '1.5rem', padding: '1rem', background: '#141414', borderRadius: '0.5rem' }}>
                                 <div>
-                                    <div style={{ fontSize: '2rem', fontFamily: 'var(--font-oswald)', color: '#fff', fontWeight: 700, lineHeight: 1 }}>{haircut_credits || 0}</div>
-                                    <div style={{ fontSize: '0.75rem', color: '#888', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '0.5rem' }}>Haircut Credits</div>
-                                </div>
-                                {subscription_tier.includes('Beard') && (
-                                    <div>
-                                        <div style={{ fontSize: '2rem', fontFamily: 'var(--font-oswald)', color: '#fff', fontWeight: 700, lineHeight: 1 }}>{beard_credits || 0}</div>
-                                        <div style={{ fontSize: '0.75rem', color: '#888', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '0.5rem' }}>Beard Credits</div>
+                                    <div style={{ fontSize: '2rem', fontFamily: 'var(--font-oswald)', color: '#fff', fontWeight: 700, lineHeight: 1 }}>
+                                        {subscription_tier.includes('Beard') ? (beard_credits || 0) : (haircut_credits || 0)}
                                     </div>
-                                )}
+                                    <div style={{ fontSize: '0.75rem', color: '#888', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '0.5rem' }}>
+                                        {subscription_tier.includes('Beard') ? 'Haircut + Beard Credits' : 'Haircut Credits'}
+                                    </div>
+                                </div>
                             </div>
                             
                             {((haircut_credits || 0) > 0 || (beard_credits || 0) > 0) && (
