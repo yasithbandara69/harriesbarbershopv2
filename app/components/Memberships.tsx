@@ -31,12 +31,8 @@ export default function Memberships() {
   }, []);
 
   const handleJoinClick = async (planTitle: string) => {
-    if (!user) {
-      setShowAuthModal(true);
-    } else {
-      setSelectedPlanTitle(planTitle);
-      setShowMembershipModal(true);
-    }
+    setSelectedPlanTitle(planTitle);
+    setShowMembershipModal(true);
   };
 
   const memberships = [
@@ -104,12 +100,23 @@ export default function Memberships() {
         isOpen={showAuthModal} 
         onClose={() => setShowAuthModal(false)} 
         initialView="signup" 
+        onSuccess={() => {
+            setShowAuthModal(false);
+            if (selectedPlanTitle) {
+                setShowMembershipModal(true);
+            }
+        }}
       />
 
       <MembershipModal 
         isOpen={showMembershipModal} 
         onClose={() => setShowMembershipModal(false)} 
         planTitle={selectedPlanTitle} 
+        isAuthenticated={!!user}
+        onRequireAuth={() => {
+            setShowMembershipModal(false);
+            setShowAuthModal(true);
+        }}
       />
     </section>
   );

@@ -9,6 +9,8 @@ interface MembershipModalProps {
   isOpen: boolean;
   onClose: () => void;
   planTitle: string | null;
+  isAuthenticated: boolean;
+  onRequireAuth: () => void;
 }
 
 const planDetails = {
@@ -44,7 +46,7 @@ const planDetails = {
   }
 };
 
-export default function MembershipModal({ isOpen, onClose, planTitle }: MembershipModalProps) {
+export default function MembershipModal({ isOpen, onClose, planTitle, isAuthenticated, onRequireAuth }: MembershipModalProps) {
   const [agreed, setAgreed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -59,6 +61,11 @@ export default function MembershipModal({ isOpen, onClose, planTitle }: Membersh
 
   const handleCheckout = async () => {
     if (!agreed) return;
+    
+    if (!isAuthenticated) {
+      onRequireAuth();
+      return;
+    }
     
     setIsLoading(true);
     try {
