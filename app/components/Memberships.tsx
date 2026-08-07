@@ -3,12 +3,14 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import AuthModal from './auth/AuthModal';
+import MembershipModal from './MembershipModal';
 import styles from "./Memberships.module.css";
 
 export default function Memberships() {
   const [user, setUser] = useState<any>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [isLoading, setIsLoading] = useState<string | null>(null);
+  const [showMembershipModal, setShowMembershipModal] = useState(false);
+  const [selectedPlanTitle, setSelectedPlanTitle] = useState<string | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
@@ -32,30 +34,8 @@ export default function Memberships() {
     if (!user) {
       setShowAuthModal(true);
     } else {
-      setIsLoading(planTitle);
-      try {
-        const res = await fetch('/api/checkout_sessions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ planTitle }),
-        });
-
-        const data = await res.json();
-
-        if (res.ok && data.url) {
-          window.location.href = data.url;
-        } else {
-          console.error('Error from checkout API:', data.error);
-          alert(`Error starting checkout: ${data.error}`);
-          setIsLoading(null);
-        }
-      } catch (err) {
-        console.error('Failed to start checkout:', err);
-        alert('Failed to start checkout. Please try again later.');
-        setIsLoading(null);
-      }
+      setSelectedPlanTitle(planTitle);
+      setShowMembershipModal(true);
     }
   };
 
@@ -112,10 +92,8 @@ export default function Memberships() {
               <button 
                 className={styles.joinButton} 
                 onClick={() => handleJoinClick(plan.title)}
-                disabled={isLoading === plan.title}
-                style={{ opacity: isLoading === plan.title ? 0.7 : 1, cursor: isLoading === plan.title ? 'not-allowed' : 'pointer' }}
               >
-                {isLoading === plan.title ? 'Redirecting...' : 'Join Now'}
+                Join Now
               </button>
             </div>
           ))}
@@ -126,6 +104,12 @@ export default function Memberships() {
         isOpen={showAuthModal} 
         onClose={() => setShowAuthModal(false)} 
         initialView="signup" 
+      />
+
+      <MembershipModal 
+        isOpen={showMembershipModal} 
+        onClose={() => setShowMembershipModal(false)} 
+        planTitle={selectedPlanTitle} 
       />
     </section>
   );

@@ -78,7 +78,7 @@ export async function POST(req: Request) {
                          beardCredits = 4;
                      }
 
-                     if (haircutCredits > 0) {
+                     if (haircutCredits > 0 || beardCredits > 0) {
                         await adminClient.from('profiles').update({
                             haircut_credits: haircutCredits,
                             beard_credits: beardCredits,
