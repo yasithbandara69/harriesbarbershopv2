@@ -58,6 +58,8 @@ export default function Memberships() {
     },
   ];
 
+  const membershipsOpen = process.env.NEXT_PUBLIC_MEMBERSHIPS_OPEN !== 'false';
+
   return (
     <section id="memberships" className={styles.sectionWrapper}>
       <div className={styles.container}>
@@ -88,8 +90,10 @@ export default function Memberships() {
               <button 
                 className={styles.joinButton} 
                 onClick={() => handleJoinClick(plan.title)}
+                disabled={!membershipsOpen}
+                style={!membershipsOpen ? { cursor: 'not-allowed', opacity: 0.7 } : {}}
               >
-                Join Now
+                {membershipsOpen ? 'Join Now' : 'Sold Out'}
               </button>
             </div>
           ))}
