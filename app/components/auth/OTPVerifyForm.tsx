@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { verifyOTP, resendOTP } from '@/app/auth/actions';
+import { createClient } from '@/utils/supabase/client';
 import styles from './Auth.module.css';
 
 interface OTPVerifyFormProps {
@@ -31,6 +32,10 @@ export default function OTPVerifyForm({ email, onSuccess, onCancel, planId }: OT
         if (result?.error) {
             setError(result.error);
         } else {
+            // Force client-side session sync
+            const supabase = createClient();
+            await supabase.auth.getUser();
+            
             // Success!
             if (planId) {
                 window.location.href = `/api/checkout/subscription?planId=${planId}`;

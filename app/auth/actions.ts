@@ -4,6 +4,7 @@ import { createClient } from "@/utils/supabase/server";
 import { squareClient, locationId } from "@/lib/square";
 import { randomUUID } from "crypto";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 
 export async function login(formData: FormData) {
   const supabase = await createClient();
@@ -52,7 +53,7 @@ export async function login(formData: FormData) {
   // CHANGE: Return success status, let client handle valid redirect.
   // If we must handle security (admin), we can redirect.
   // For users, we return so client can do `router.push(destination)`.
-  
+  revalidatePath('/', 'layout');
   return { success: true };
 }
 
@@ -94,6 +95,7 @@ export async function signup(formData: FormData) {
 
   if (data?.session) {
       // Immediate session created (Email confirmation disabled or implicit)
+      revalidatePath('/', 'layout');
       return { success: true };
   } else {
       // Email confirmation required
@@ -166,6 +168,7 @@ export async function verifyOTP(email: string, token: string) {
       }
   }
 
+  revalidatePath('/', 'layout');
   return { success: true };
 }
 
