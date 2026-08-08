@@ -11,6 +11,7 @@ export default function Memberships() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showMembershipModal, setShowMembershipModal] = useState(false);
   const [selectedPlanTitle, setSelectedPlanTitle] = useState<string | null>(null);
+  const [justAuthenticated, setJustAuthenticated] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
@@ -106,6 +107,7 @@ export default function Memberships() {
         initialView="signup" 
         onSuccess={() => {
             setShowAuthModal(false);
+            setJustAuthenticated(true);
             if (selectedPlanTitle) {
                 setShowMembershipModal(true);
             }
@@ -116,7 +118,7 @@ export default function Memberships() {
         isOpen={showMembershipModal} 
         onClose={() => setShowMembershipModal(false)} 
         planTitle={selectedPlanTitle} 
-        isAuthenticated={!!user}
+        isAuthenticated={!!user || justAuthenticated}
         onRequireAuth={() => {
             setShowMembershipModal(false);
             setShowAuthModal(true);
