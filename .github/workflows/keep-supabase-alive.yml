@@ -1,0 +1,26 @@
+name: Keep Supabase Alive
+
+on:
+  schedule:
+    # Runs at 00:00 UTC every Wednesday and Sunday
+    - cron: '0 0 * * 0,3'
+  workflow_dispatch:
+
+jobs:
+  ping-supabase:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase Database
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --request GET '${{ secrets.SUPABASE_URL }}/rest/v1/profiles?select=*&limit=1' \
+          --header "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+          --header "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}")
+          
+          echo "Supabase responded with status code: $STATUS"
+          
+          if [ "$STATUS" -ge 200 ] && [ "$STATUS" -lt 300 ]; then
+            echo "Successfully pinged Supabase!"
+          else
+            echo "Failed to ping Supabase."
+            exit 1
+          fi
