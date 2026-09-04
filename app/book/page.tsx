@@ -351,12 +351,24 @@ export default function BookingPage() {
                                         <div style={{ padding: '0.5rem 0', fontWeight: '500', fontSize: '0.875rem' }}>
                                             Book Now ({isLoadingSvc ? "Loading..." : `${services.length} services`})
                                         </div>
-                                        {services.filter(s => !s.isAddon && !s.name.toLowerCase().includes('member')).map(svc => (
+                                        {[...services].sort((a, b) => {
+                                            const desiredOrder = [
+                                                "Haircut & Beard - Regular",
+                                                "Haircut - Regular",
+                                                "Kids Cut - Regular",
+                                                "Beard & Trim Lineup - Regular"
+                                            ];
+                                            const indexA = desiredOrder.indexOf(a.name);
+                                            const indexB = desiredOrder.indexOf(b.name);
+                                            if (indexA === -1 && indexB === -1) return 0;
+                                            if (indexA === -1) return 1;
+                                            if (indexB === -1) return -1;
+                                            return indexA - indexB;
+                                        }).filter(s => !s.isAddon && !s.name.toLowerCase().includes('member')).map(svc => (
                                             <div key={svc.id} className={styles.serviceItem}>
                                                 <div className={styles.serviceInfo}>
                                                     <p className={styles.serviceName}>{svc.name}</p>
                                                     <p className={styles.serviceMeta}>{svc.description}</p>
-                                                    <p className={styles.serviceMeta}>{formatDuration(svc.duration)}</p>
                                                 </div>
                                                 <div className={styles.servicePriceBlock}>
                                                     <span className={styles.priceTag}>{formatPrice(svc.price.amount)}</span>
@@ -398,7 +410,6 @@ export default function BookingPage() {
                                         <div className={styles.serviceInfo} style={{ flex: '1 1 200px' }}>
                                             <p className={styles.serviceName} style={{ fontSize: '1.125rem', marginBottom: '0.25rem' }}>{svc.name}</p>
                                             <p className={styles.serviceMeta}>{svc.description}</p>
-                                            <p className={styles.serviceMeta}>+ {formatDuration(svc.duration)}</p>
                                         </div>
                                         <div className={styles.servicePriceBlock} style={{ margin: 0, alignItems: 'center', flexDirection: 'row', gap: '1.5rem' }}>
                                             <span className={styles.priceTag}>+{formatPrice(svc.price.amount)}</span>
