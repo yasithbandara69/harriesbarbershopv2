@@ -229,8 +229,13 @@ export default function BookingPage() {
             customerInfo,
             notes // Pass notes
         );
-        setBookingResult(result);
-        setStep(4);
+        
+        if (!result.success) {
+            setError("Booking failed: " + result.error);
+        } else {
+            setBookingResult(result.booking);
+            setStep(4);
+        }
     } catch (e: any) {
         setError("Booking failed: " + e.message);
     } finally {

@@ -201,7 +201,7 @@ export async function createBooking(
     },
     customerNote?: string
 ) {
-    if (!locationId) throw new Error("Location ID not set");
+    if (!locationId) return { success: false, error: "Location ID not set" };
 
     try {
         // Save postcode to Supabase if provided
@@ -273,7 +273,7 @@ export async function createBooking(
             }
         }
 
-        if (!customerId) throw new Error("Failed to resolve customer user.");
+        if (!customerId) return { success: false, error: "Failed to resolve customer user." };
 
         // 2. Create Booking
         const bookingReq: CreateBookingRequest = {
@@ -300,14 +300,14 @@ export async function createBooking(
         const booking = bResult.data?.booking || bResult.booking || bResult.result?.booking;
         
         if (!booking) {
-            throw new Error("Booking created but no booking object returned.");
+            return { success: false, error: "Booking created but no booking object returned." };
         }
 
-        return serializeBigInt(booking);
+        return { success: true, booking: serializeBigInt(booking) };
 
     } catch (error: any) {
         console.error("Error creating booking:", error);
-        throw new Error(error.errors ? JSON.stringify(error.errors) : error.message);
+        return { success: false, error: error.errors ? JSON.stringify(error.errors) : error.message };
     }
 }
 
@@ -383,11 +383,12 @@ export async function createMemberBooking(
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
-        throw new Error("You must be logged in to book a member appointment.");
+        return { success: false, error: "You must be logged in to book a member appointment." };
     }
 
     // Call normal booking
     const result = await createBooking([service], staffId, startAt, customerDetails, customerNote);
+    if (!result.success) return result;
 
     // Deduct credit
     const adminClient = createAdminClient();

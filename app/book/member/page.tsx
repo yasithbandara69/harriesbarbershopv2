@@ -128,7 +128,12 @@ export default function MemberBookingPage() {
             notes,
             tier!
         );
-        setBookingResult(result);
+        
+        if (!result.success) {
+            setError("Booking failed: " + result.error);
+        } else {
+            setBookingResult(result.booking);
+        }
     } catch (e: any) {
         setError("Booking failed: " + e.message);
     } finally {
