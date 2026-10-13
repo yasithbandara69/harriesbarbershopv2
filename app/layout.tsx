@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Oswald, Playfair_Display } from "next/font/google";
+import { Inter, Oswald } from "next/font/google";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import "./globals.css";
@@ -14,12 +14,6 @@ const oswald = Oswald({
   subsets: ["latin"],
 });
 
-const playfair = Playfair_Display({
-  variable: "--font-playfair",
-  subsets: ["latin"],
-  style: ["normal", "italic"],
-});
-
 export const metadata: Metadata = {
   title: "Harrie's Barbershop",
   description: "Book your appointment",
@@ -32,7 +26,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} ${oswald.variable} ${playfair.variable}`} suppressHydrationWarning>
+      <body className={`${inter.variable} ${oswald.variable}`} suppressHydrationWarning>
         <Header />
         {children}
         <Footer />

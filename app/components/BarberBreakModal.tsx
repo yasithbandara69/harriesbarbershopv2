@@ -20,8 +20,7 @@ export default function BarberBreakModal() {
       return;
     }
 
-    // Splash screen runs for 2000ms + 800ms slide-up transition on homepage.
-    // Reveal popup smoothly right after splash screen slides away.
+    // Wait for splash screen to finish sliding up (~2.5s)
     const timer = setTimeout(() => {
       setIsOpen(true);
     }, 2500);
@@ -57,7 +56,7 @@ export default function BarberBreakModal() {
     try {
       sessionStorage.setItem('harrie_break_notice_dismissed', 'true');
     } catch {
-      // Ignore in private browsing / storage restricted environments
+      // Ignore in storage restricted environments
     }
   };
 
@@ -73,25 +72,24 @@ export default function BarberBreakModal() {
       {!isOpen && hasDismissed && (
         <button
           onClick={handleReopen}
-          className={styles.floatingNoticePill}
+          className={styles.floatingPill}
           aria-label="View Barber Schedule Notice"
-          title="Harry's Break Schedule: Oct 13 - 22"
         >
-          <span style={{ fontSize: '1rem' }}>✂️</span>
+          <span>✂️</span>
           <span>
-            <strong className={styles.pillGoldText}>Schedule Notice:</strong> Oct 13–22
+            <strong className={styles.pillAccent}>Notice:</strong> Oct 13–22 Schedule
           </span>
         </button>
       )}
 
-      {/* Modal Portal */}
+      {/* Clean Modal Portal */}
       {isOpen &&
         createPortal(
           <div
             className={styles.overlay}
             role="dialog"
             aria-modal="true"
-            aria-labelledby="modal-break-title"
+            aria-labelledby="break-modal-title"
           >
             {/* Backdrop click area */}
             <div
@@ -100,21 +98,21 @@ export default function BarberBreakModal() {
               aria-hidden="true"
             />
 
-            {/* Modal Box */}
-            <div className={styles.modalWrapper}>
+            {/* Modal Card */}
+            <div className={styles.modal}>
               {/* Close Button */}
               <button
                 onClick={handleDismiss}
                 className={styles.closeButton}
-                aria-label="Close Announcement"
+                aria-label="Close"
               >
                 <svg
-                  width="18"
-                  height="18"
+                  width="16"
+                  height="16"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
-                  strokeWidth="2.2"
+                  strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 >
@@ -123,142 +121,133 @@ export default function BarberBreakModal() {
                 </svg>
               </button>
 
-              <div className={styles.scrollContainer}>
-                {/* Top Banner Image with atmospheric razor shave */}
-                <div className={styles.bannerContainer}>
-                  <Image
-                    src="/break-banner.jpg"
-                    alt="Barber Grooming Experience"
-                    fill
-                    priority
-                    className={styles.bannerImage}
-                    sizes="(max-width: 500px) 100vw, 480px"
-                  />
-                  <div className={styles.bannerOverlay} />
-                  <div className={styles.badgePill}>
-                    <span className={styles.badgeDot} />
-                    <span>Schedule Notice</span>
-                  </div>
+              {/* Header */}
+              <div className={styles.headerSection}>
+                <div className={styles.catchyPhrase}>
+                  <span className={styles.pulseDot} />
+                  <span>Barber Availability</span>
                 </div>
 
-                {/* Content Body */}
-                <div className={styles.bodyContent}>
-                  {/* Headline matching user's post */}
-                  <div className={styles.headerGroup} id="modal-break-title">
-                    <h3 className={styles.titlePrefix}>Taking a</h3>
-                    <h2 className={styles.titleItalic}>short break</h2>
-                  </div>
+                <h2 id="break-modal-title" className={styles.title}>
+                  Harry is Taking a <span className={styles.titleHighlight}>Short Break</span>
+                </h2>
 
-                  {/* Dates Display */}
-                  <div className={styles.dateContainer}>
-                    <svg
-                      className={styles.dateIcon}
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
-                      <line x1="16" x2="16" y1="2" y2="6" />
-                      <line x1="8" x2="8" y1="2" y2="6" />
-                      <line x1="3" x2="21" y1="10" y2="10" />
-                    </svg>
-                    <span className={styles.dateText}>13TH – 22ND OF OCTOBER</span>
-                  </div>
-
-                  {/* Gold Divider */}
-                  <div className={styles.goldDivider} />
-
-                  {/* Advance Booking Note */}
-                  <div className={styles.noticeBox}>
-                    <span className={styles.noticeNumber}>1</span>
-                    <p className={styles.noticeText}>
-                      Please book in advance if you have something important coming up.
-                    </p>
-                  </div>
-
-                  {/* Gold Divider */}
-                  <div className={styles.goldDivider} />
-
-                  {/* Barber Availability Cards */}
-                  <div className={styles.barberStatusGrid}>
-                    {/* Harry Card */}
-                    <div className={styles.barberCard}>
-                      <div className={styles.barberCardAvatarWrapper}>
-                        <Image
-                          src="/barbers/Harry.jpg"
-                          alt="Harry"
-                          width={60}
-                          height={60}
-                          className={styles.barberAvatarImg}
-                        />
-                      </div>
-                      <h4 className={styles.barberName}>Harry</h4>
-                      <span className={`${styles.barberStatusTag} ${styles.statusAway}`}>
-                        Away Oct 13–22
-                      </span>
-                    </div>
-
-                    {/* Kavish Card */}
-                    <div className={`${styles.barberCard} ${styles.barberCardActive}`}>
-                      <div className={styles.barberCardAvatarWrapper}>
-                        <Image
-                          src="/barbers/Kavish.jpg"
-                          alt="Kavish"
-                          width={60}
-                          height={60}
-                          className={styles.barberAvatarImg}
-                        />
-                      </div>
-                      <h4 className={styles.barberName}>Kavish</h4>
-                      <span className={`${styles.barberStatusTag} ${styles.statusAvailable}`}>
-                        <span className={styles.activeDot} />
-                        In-Store & Ready
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Highlight message */}
-                  <p className={styles.highlightMessage}>
-                    In the meantime, <strong>Kavish</strong> will take care of you ✂️
-                  </p>
-
-                  {/* CTAs */}
-                  <div className={styles.actionsWrapper}>
-                    <Link
-                      href="/book"
-                      onClick={handleDismiss}
-                      className={styles.primaryCta}
-                    >
-                      <span>Book with Kavish</span>
-                      <svg
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <line x1="5" y1="12" x2="19" y2="12" />
-                        <polyline points="12 5 19 12 12 19" />
-                      </svg>
-                    </Link>
-
-                    <button
-                      type="button"
-                      onClick={handleDismiss}
-                      className={styles.secondaryDismiss}
-                    >
-                      Got it, continue to site
-                    </button>
-                  </div>
+                <div className={styles.dateBadge}>
+                  <svg
+                    width="15"
+                    height="15"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
+                    <line x1="16" y1="2" x2="16" y2="6" />
+                    <line x1="8" y1="2" x2="8" y2="6" />
+                    <line x1="3" y1="10" x2="21" y2="10" />
+                  </svg>
+                  <span>October 13th – 22nd</span>
                 </div>
+              </div>
+
+              {/* Description */}
+              <p className={styles.description}>
+                Harry will be away during these dates. In the meantime, <strong>Kavish</strong> is
+                in-store and ready to take care of all your haircuts, beard trims, and styling services.
+              </p>
+
+              {/* Barber Availability Grid */}
+              <div className={styles.barberGrid}>
+                {/* Harry */}
+                <div className={styles.barberCard}>
+                  <div className={styles.avatarWrapper}>
+                    <Image
+                      src="/barbers/Harry.jpg"
+                      alt="Harry"
+                      width={52}
+                      height={52}
+                      className={styles.avatarImg}
+                    />
+                  </div>
+                  <h3 className={styles.barberName}>Harry</h3>
+                  <span className={`${styles.statusTag} ${styles.statusAway}`}>
+                    Away Oct 13–22
+                  </span>
+                </div>
+
+                {/* Kavish */}
+                <div className={`${styles.barberCard} ${styles.barberCardActive}`}>
+                  <div className={styles.avatarWrapper}>
+                    <Image
+                      src="/barbers/Kavish.jpg"
+                      alt="Kavish"
+                      width={52}
+                      height={52}
+                      className={styles.avatarImg}
+                    />
+                  </div>
+                  <h3 className={styles.barberName}>Kavish</h3>
+                  <span className={`${styles.statusTag} ${styles.statusAvailable}`}>
+                    <span className={styles.greenDot} />
+                    Available In-Store
+                  </span>
+                </div>
+              </div>
+
+              {/* Advance Booking Note */}
+              <div className={styles.noticeBox}>
+                <svg
+                  className={styles.noticeIcon}
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+                <p className={styles.noticeText}>
+                  Please book in advance if you have an upcoming occasion or important event.
+                </p>
+              </div>
+
+              {/* Actions */}
+              <div className={styles.buttonGroup}>
+                <Link
+                  href="/book"
+                  onClick={handleDismiss}
+                  className={styles.primaryButton}
+                >
+                  <span>Book with Kavish</span>
+                  <svg
+                    width="15"
+                    height="15"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                    <polyline points="12 5 19 12 12 19" />
+                  </svg>
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={handleDismiss}
+                  className={styles.secondaryButton}
+                >
+                  Continue to Website
+                </button>
               </div>
             </div>
           </div>,
