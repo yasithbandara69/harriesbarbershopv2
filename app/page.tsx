@@ -1,7 +1,6 @@
 import Link from "next/link";
 import styles from "./page.module.css";
 import SplashScreen from "./components/SplashScreen";
-import BarberBreakModal from "./components/BarberBreakModal";
 import AboutUs from "./components/AboutUs";
 import Memberships from "./components/Memberships";
 import Carousel from "./components/Carousel";
@@ -13,7 +12,6 @@ export default function Home() {
     <main>
       <BackgroundVideo />
       <SplashScreen />
-      <BarberBreakModal />
       <section className={styles.hero}>
         <div className={styles.heroContent}>
           <div className={styles.catchyPhrase}>Classic Grooming Experience</div>
